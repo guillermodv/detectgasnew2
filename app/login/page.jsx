@@ -1,7 +1,8 @@
 "use client";
-import {useContext} from 'react'
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useContext } from "react";
 import * as Yup from "yup";
 import { UserContext } from "../context/userContext";
 
@@ -15,7 +16,7 @@ const validationSchema = Yup.object({
 function LoginPage() {
   const router = useRouter();
   const user = useContext(UserContext);
-  const {setUserSession} = user;
+  const { setUserSession } = user;
 
   const initialValues = { username: "", password: "" };
 
@@ -27,6 +28,18 @@ function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-400">
       <div className="w-full max-w-xs">
+        <div className="flex flex-col items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="Detect Gas Logo"
+            width={110}
+            height={100}
+          />
+          <h1 className="text-lg font-bold">DETECT GAS</h1>
+          <p className="text-sm font-bold mb-3 capitalize">
+            analizador de gases
+          </p>
+        </div>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}

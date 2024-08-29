@@ -28,7 +28,7 @@ function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-teal-300 to-teal-500">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-400">
       <div className="w-full max-w-xs">
         <Formik
           initialValues={initialValues}
@@ -36,7 +36,7 @@ function RegisterPage() {
           onSubmit={onSubmit}
         >
           {({ errors, touched }) => (
-            <Form className="bg-teal-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
               <div className="mb-4">
                 <label
                   className="block text-teal-800 text-sm font-bold mb-2"

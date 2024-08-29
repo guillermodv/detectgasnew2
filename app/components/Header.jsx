@@ -1,6 +1,10 @@
+import { useContext } from "react";
 import Image from "next/image";
+import { UserContext } from "../context/userContext";
 
 export default function Header() {
+  const user = useContext(UserContext);
+  const {setUserSession} = user;
   return (
     <header className="bg-gray-100 p-4 shadow-md flex items-center justify-between">
       <div className="flex items-center">
@@ -27,6 +31,11 @@ export default function Header() {
             <a href="login" className="hover:underline">
               LOGIN
             </a>
+          </li>
+          <li>
+            <div href="login" className="hover:underline" onClick={() => setUserSession(null)}>
+              LOGOUT
+            </div>
           </li>
         </ul>
       </nav>

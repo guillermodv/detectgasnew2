@@ -1,7 +1,12 @@
+"use client"
+import {useContext} from 'react'
 import Header from "../components/Header";
 import SensorCard from "../components/SensorCard";
+import { UserContext } from "../context/userContext";
 
 export default function Home() {
+  const user = useContext(UserContext);
+  const {userSession, setUserSession} = user;
   return (
     <div>
       <Header />

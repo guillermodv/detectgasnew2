@@ -1,7 +1,9 @@
 "use client";
+import {useContext} from 'react'
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
+import { UserContext } from "../context/userContext";
 
 const validationSchema = Yup.object({
   username: Yup.string().required("El nombre de usuario es obligatorio"),
@@ -12,10 +14,13 @@ const validationSchema = Yup.object({
 
 function LoginPage() {
   const router = useRouter();
+  const user = useContext(UserContext);
+  const {setUserSession} = user;
+
   const initialValues = { username: "", password: "" };
 
   const onSubmit = (values) => {
-    console.log(values);
+    setUserSession(values);
     router.push("/dashboard");
   };
 

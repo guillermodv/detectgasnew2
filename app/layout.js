@@ -2,7 +2,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { UserContext } from "./context/userContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -10,11 +10,13 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }) {
   const [userSession, setUserSession] = useState({username: "", password: ""});
   const user = { userSession, setUserSession };
+  const pathname = usePathname()
 
   const router = useRouter();
   
   useEffect(() => {
-    if (!userSession || userSession.password === '') {
+    console.log(pathname);
+    if (!userSession || userSession.username === '' && pathname !== "/login" && pathname !== "/register") {
       router.push('/login')
     }
   }, [userSession])

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function SensorCard({
   sensorName,
   gasType,
@@ -10,9 +12,13 @@ export default function SensorCard({
         <h3 className="text-xl font-semibold">{sensorName}</h3>
         <p>Tipo de gas: {gasType}</p>
         <p>Nivel de gas: {gasLevel}</p>
-        <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          Historico del sensor
-        </button>
+        
+        {/* Link al historial del sensor */}
+        <Link href="/historicoSensor" passHref>
+          <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Histórico del sensor
+          </button>
+        </Link>
       </div>
       <div className="ml-4">
         {isActive ? (

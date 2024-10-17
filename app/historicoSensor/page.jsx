@@ -18,10 +18,9 @@ export default function HistoricoSensor() {
 
   // Simula la carga de datos desde el dispositivo
   useEffect(() => {
-    // Aquí vendrían los datos reales desde tu backend o el dispositivo.
     const fetchData = async () => {
       const dataFromDevice = {
-        "2024-09-14": {
+        "2024-10-01": {
           labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
           datasets: [
             {
@@ -36,12 +35,12 @@ export default function HistoricoSensor() {
             },
           ],
         },
-        "2024-09-13": {
+        "2024-09-30": {
           labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
           datasets: [
             {
               label: "Nivel de gas",
-              data: [320, 330, 340, 370, 400, 380, 360, 350, 340],
+              data: [320, 330, 380, 370, 400, 380, 360, 350, 340], // Cambiado para simular un pico
               borderColor: "rgba(75, 192, 192, 1)",
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               fill: true,
@@ -53,17 +52,28 @@ export default function HistoricoSensor() {
         },
       };
 
-      // Simular datos de alarmas
+      // Simula la carga de alarmas
       const alarmasSimuladas = [
-        { id: 1, fecha: "2024-09-14", hora: "12:00 PM", nivelGas: 380, tipoGas: "CO" },
-        { id: 2, fecha: "2024-09-14", hora: "17:30 PM", nivelGas: 400, tipoGas: "CO" },
-        { id: 3, fecha: "2024-09-13", hora: "10:00 AM", nivelGas: 370, tipoGas: "CO" },
+        { id: 1, fecha: "2024-10-01", hora: "12:00 PM", nivelGas: 380, tipoGas: "CO" },
+        { id: 2, fecha: "2024-10-01", hora: "17:30 PM", nivelGas: 400, tipoGas: "CO" },
+        { id: 3, fecha: "2024-09-30", hora: "10:00 AM", nivelGas: 450, tipoGas: "CO" },
       ];
 
       // Simula la carga del gráfico y las alarmas según la fecha seleccionada
       const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
-      setChartData(dataFromDevice[formattedDate] || null);
       setAlarmas(alarmasSimuladas.filter((a) => a.fecha === formattedDate));
+
+      // Verifica si hay una alarma para la fecha seleccionada
+      if (formattedDate === "2024-09-30" && alarmasSimuladas.some(a => a.fecha === formattedDate)) {
+        const alarm = alarmasSimuladas.find(a => a.fecha === formattedDate);
+        
+        // Modificar los datos para agregar un pico a las 10:00
+        const updatedData = [...dataFromDevice[formattedDate].datasets[0].data];
+        updatedData[2] = Math.max(...updatedData) + 50; // Agrega un pico de 50 unidades más
+        dataFromDevice[formattedDate].datasets[0].data = updatedData;
+      }
+
+      setChartData(dataFromDevice[formattedDate] || null);
     };
 
     fetchData();
@@ -134,7 +144,7 @@ export default function HistoricoSensor() {
                     },
                     beginAtZero: true,
                     min: 300,
-                    max: 400,
+                    max: 450, // Aumenta el máximo para permitir el pico
                   },
                 },
               }}
@@ -157,8 +167,6 @@ export default function HistoricoSensor() {
            Histórico de alarmas
           </button>
         </div>
-
-
 
         {/* Modal para el historial de alarmas */}
         <Modal isOpen={isModalOpen} onClose={closeModal}>

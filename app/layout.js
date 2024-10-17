@@ -5,6 +5,7 @@ import { UserContext } from "./context/userContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
@@ -16,7 +17,7 @@ export default function RootLayout({ children }) {
   
   useEffect(() => {
     console.log(pathname);
-    if (!userSession || userSession.username === '' && pathname !== "/login" && pathname !== "/register") {
+    if (!userSession || userSession.username === '' && pathname !== "/login" && pathname !== "/recovery" && pathname !== "/login2" && pathname !== "/register" && pathname !== "/register2" && pathname !== "/perfil" && pathname !== "/dashboard" && pathname !== "/historicoSensor") {
       router.push('/login')
     }
   }, [userSession])

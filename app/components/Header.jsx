@@ -2,11 +2,13 @@ import Image from "next/image";
 import { useContext } from "react";
 import { UserContext } from "../context/userContext";
 
+
 export default function Header() {
   const user = useContext(UserContext);
   const { setUserSession, userSession } = user;
   return (
     <header className="bg-gray-100 p-4 shadow-md flex items-center justify-between">
+      
       <div className="flex items-center">
         <Image src="/logo.png" alt="Detect Gas Logo" width={110} height={100} />
         <div className="ml-2">
@@ -14,23 +16,24 @@ export default function Header() {
           <p className="text-sm font-bold capitalize">analizador de gases</p>
         </div>
       </div>
+        
 
-      <nav className="flex-1 flex justify-center">
-        <ul className="flex space-x-8 text-lg font-semibold">
+      <nav className="absolute left-1/2 transform -translate-x-1/2">
+        <ul className="flex space-x-8 text-lg font-extrabold text-blue-800">
           <li>
-            <a href="#" className="hover:underline">
+            <a href="dashboard" className="hover:underline text-shadow">
               INICIO
             </a>
           </li>
           <li>
-            <a href="#" className="hover:underline">
+            <a href="perfil" className="hover:underline text-shadow">
               PERFIL
             </a>
           </li>
           <li>
             <div
               href="#"
-              className="hover:underline"
+              className="hover:underline text-shadow"
               onClick={() => setUserSession(null)}
             >
               LOGOUT

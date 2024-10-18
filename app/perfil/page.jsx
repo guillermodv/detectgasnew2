@@ -1,21 +1,14 @@
-// app/profile/page.jsx
-
-"use client"
-import {useContext} from 'react'
+"use client";
+import { useContext } from 'react';
 import Header from "../components/Header";
-import SensorCard from "../components/SensorCard";
 import { UserContext } from "../context/userContext";
 
 export default function UserProfile() {
-  const user = useContext(UserContext);
-  const {userSession, setUserSession} = user;
+  const { userSession } = useContext(UserContext);
 
-  // Datos simulados
-  const simulatedUserData = {
-    username: "Emiliano Colavita", 
-    email: "colavitaemiliano1@gmail.com",
-    devicesConnected: 2,
-  };
+  if (!userSession) {
+    return <p>Cargando datos del usuario...</p>;
+  }
 
   return (
     <div>
@@ -42,18 +35,18 @@ export default function UserProfile() {
             <h2 className="text-2xl font-bold text-center mb-4">Perfil de Usuario</h2>
           </div>
 
-          <div className="space-y-6 text-center">
-            <div className="flex justify-between items-center text-lg">
-              <span className="font-semibold">Nombre de usuario:</span>
-              <span>{simulatedUserData.username}</span>
+          <div className="space-y-4 text-center"> {/* Espacio vertical reducido */}
+            <div className="flex items-center text-lg"> {/* Cambiado a items-center */}
+              <span className="font-semibold mr-1">Nombre de usuario:</span> {/* Añadido margen derecho */}
+              <span>{userSession.name}</span>
             </div>
-            <div className="flex justify-between items-center text-lg">
-              <span className="font-semibold">Correo electrónico:</span>
-              <span>{simulatedUserData.email}</span>
+            <div className="flex items-center text-lg">
+              <span className="font-semibold mr-1">Correo electrónico:</span>
+              <span>{userSession.email}</span>
             </div>
-            <div className="flex justify-between items-center text-lg">
-              <span className="font-semibold">Dispositivos conectados:</span>
-              <span>{simulatedUserData.devicesConnected}</span>
+            <div className="flex items-center text-lg">
+              <span className="font-semibold mr-1">Dispositivos conectados:</span>
+              <span>1</span> {/* Hardcodeado como 1 */}
             </div>
           </div>
         </div>

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Line } from "react-chartjs-2";
 import "chart.js/auto";
-import Header from "../components/Header";
-import Modal from "../components/Modal";
+import moment from "moment";
+import { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import moment from "moment";
+import { PuffLoader } from "react-spinners";
+import Header from "../components/Header";
+import Modal from "../components/Modal";
 
 export default function HistoricoSensor() {
   // Estado para almacenar los datos del gráfico
@@ -17,11 +18,16 @@ export default function HistoricoSensor() {
   const [endDate, setEndDate] = useState(new Date()); // Fecha de fin
   const [alarmas, setAlarmas] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   // Fetch para obtener los datos del backend y formatearlos para el gráfico
   useEffect(() => {
+    setLoading(true);
     const fetchRealData = async () => {
       try {
-        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/cores");
+        const response = await fetch(
+          "http://detectgas.brazilsouth.cloudapp.azure.com:3001/cores"
+        );
         const data = await response.json();
 
         // Filtrar los datos por el rango de fechas seleccionado
@@ -32,8 +38,12 @@ export default function HistoricoSensor() {
 
         if (filteredData.length > 0) {
           // Crear etiquetas de tiempo y valores de medición
-          const labels = filteredData.map((item) => moment(item.createdAt).format("DD/MM/YYYY HH:mm"));
-          const measurements = filteredData.map((item) => parseFloat(item.measurement));
+          const labels = filteredData.map((item) =>
+            moment(item.createdAt).format("DD/MM/YYYY HH:mm")
+          );
+          const measurements = filteredData.map((item) =>
+            parseFloat(item.measurement)
+          );
 
           // Configurar los datos del gráfico
           const chartData = {
@@ -59,8 +69,20 @@ export default function HistoricoSensor() {
 
         // Simula la carga de alarmas (puedes ajustar esta parte con datos reales de alarmas)
         const alarmasSimuladas = [
-          { id: 1, fecha: "2024-10-16", hora: "23:35", nivelGas: 310, tipoGas: "CO" },
-          { id: 2, fecha: "2024-10-18", hora: "02:26", nivelGas: 30, tipoGas: "CO" },
+          {
+            id: 1,
+            fecha: "2024-10-16",
+            hora: "23:35",
+            nivelGas: 310,
+            tipoGas: "CO",
+          },
+          {
+            id: 2,
+            fecha: "2024-10-18",
+            hora: "02:26",
+            nivelGas: 30,
+            tipoGas: "CO",
+          },
         ];
 
         // Filtrar las alarmas entre el rango de fechas seleccionado
@@ -68,11 +90,18 @@ export default function HistoricoSensor() {
         const formattedEndDate = moment(endDate).format("YYYY-MM-DD");
         setAlarmas(
           alarmasSimuladas.filter((a) =>
-            moment(a.fecha).isBetween(formattedStartDate, formattedEndDate, "day", "[]")
+            moment(a.fecha).isBetween(
+              formattedStartDate,
+              formattedEndDate,
+              "day",
+              "[]"
+            )
           )
         );
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -95,7 +124,10 @@ export default function HistoricoSensor() {
       <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
         <div className="flex justify-between">
           <h1 className="text-xl font-bold">Dispositivo 1</h1>
-          <button onClick={() => window.history.back()} className="p-2 bg-gray-200 rounded-lg">
+          <button
+            onClick={() => window.history.back()}
+            className="p-2 bg-gray-200 rounded-lg"
+          >
             ← Volver
           </button>
         </div>
@@ -125,6 +157,12 @@ export default function HistoricoSensor() {
           </div>
         </div>
 
+        {loading ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-70">
+            <PuffLoader color="#36d7b7" size={60} />
+          </div>
+        ) : null}
+
         <div className="mt-6">
           {/* Componente del gráfico */}
           {chartData ? (
@@ -138,9 +176,9 @@ export default function HistoricoSensor() {
                   },
                   title: {
                     display: true,
-                    text: `Historial de niveles de gas desde ${moment(startDate).format("LL")} hasta ${moment(
-                      endDate
-                    ).format("LL")}`,
+                    text: `Historial de niveles de gas desde ${moment(
+                      startDate
+                    ).format("LL")} hasta ${moment(endDate).format("LL")}`,
                   },
                 },
                 scales: {
@@ -174,7 +212,10 @@ export default function HistoricoSensor() {
               <p>No se activaron alarmas en este rango de fechas.</p> // Si no hay alarmas, muestra este mensaje
             )}
           </div>
-          <button onClick={openModal} className="p-2 bg-green-500 text-white rounded-lg">
+          <button
+            onClick={openModal}
+            className="p-2 bg-green-500 text-white rounded-lg"
+          >
             Histórico de alarmas
           </button>
         </div>
@@ -209,7 +250,9 @@ export default function HistoricoSensor() {
                     <span className="font-semibold">{alarma.id}</span>
                     <span>{moment(alarma.fecha).format("LL")}</span>
                     <span>Hora: {alarma.hora}</span>
-                    <span>Nivel de gas: <b>{alarma.nivelGas}</b></span>
+                    <span>
+                      Nivel de gas: <b>{alarma.nivelGas}</b>
+                    </span>
                     <span className="text-blue-500">{alarma.tipoGas}</span>
                   </div>
                 ))
@@ -218,7 +261,10 @@ export default function HistoricoSensor() {
               )}
             </div>
 
-            <button onClick={closeModal} className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg">
+            <button
+              onClick={closeModal}
+              className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg"
+            >
               Volver atrás
             </button>
           </div>

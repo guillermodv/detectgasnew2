@@ -13,71 +13,71 @@ export default function HistoricoSensor() {
   // Estado para almacenar los datos del gráfico
   const [chartData, setChartData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Controla el modal
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Fecha seleccionada
+  const [startDate, setStartDate] = useState(new Date()); // Fecha de inicio
+  const [endDate, setEndDate] = useState(new Date()); // Fecha de fin
   const [alarmas, setAlarmas] = useState([]);
 
-  // Simula la carga de datos desde el dispositivo
+  // Fetch para obtener los datos del backend y formatearlos para el gráfico
   useEffect(() => {
-    const fetchData = async () => {
-      const dataFromDevice = {
-        "2024-10-01": {
-          labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
-          datasets: [
-            {
-              label: "Nivel de gas",
-              data: [300, 310, 320, 350, 390, 360, 340, 330, 320],
-              borderColor: "rgba(75, 192, 192, 1)",
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
-              fill: true,
-              pointBorderColor: "rgba(255, 99, 132, 1)",
-              pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
-              pointRadius: 5,
-            },
-          ],
-        },
-        "2024-09-30": {
-          labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
-          datasets: [
-            {
-              label: "Nivel de gas",
-              data: [320, 330, 380, 370, 400, 380, 360, 350, 340], // Cambiado para simular un pico
-              borderColor: "rgba(75, 192, 192, 1)",
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
-              fill: true,
-              pointBorderColor: "rgba(255, 99, 132, 1)",
-              pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
-              pointRadius: 5,
-            },
-          ],
-        },
-      };
+    const fetchRealData = async () => {
+      try {
+        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/cores");
+        const data = await response.json();
 
-      // Simula la carga de alarmas
-      const alarmasSimuladas = [
-        { id: 1, fecha: "2024-10-01", hora: "12:00 PM", nivelGas: 380, tipoGas: "CO" },
-        { id: 2, fecha: "2024-10-01", hora: "17:30 PM", nivelGas: 400, tipoGas: "CO" },
-        { id: 3, fecha: "2024-09-30", hora: "10:00 AM", nivelGas: 450, tipoGas: "CO" },
-      ];
+        // Filtrar los datos por el rango de fechas seleccionado
+        const filteredData = data.filter((item) => {
+          const itemDate = moment(item.createdAt);
+          return itemDate.isBetween(startDate, endDate, "day", "[]"); // Incluye las fechas de inicio y fin
+        });
 
-      // Simula la carga del gráfico y las alarmas según la fecha seleccionada
-      const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
-      setAlarmas(alarmasSimuladas.filter((a) => a.fecha === formattedDate));
+        if (filteredData.length > 0) {
+          // Crear etiquetas de tiempo y valores de medición
+          const labels = filteredData.map((item) => moment(item.createdAt).format("DD/MM/YYYY HH:mm"));
+          const measurements = filteredData.map((item) => parseFloat(item.measurement));
 
-      // Verifica si hay una alarma para la fecha seleccionada
-      if (formattedDate === "2024-09-30" && alarmasSimuladas.some(a => a.fecha === formattedDate)) {
-        const alarm = alarmasSimuladas.find(a => a.fecha === formattedDate);
-        
-        // Modificar los datos para agregar un pico a las 10:00
-        const updatedData = [...dataFromDevice[formattedDate].datasets[0].data];
-        updatedData[2] = Math.max(...updatedData) + 50; // Agrega un pico de 50 unidades más
-        dataFromDevice[formattedDate].datasets[0].data = updatedData;
+          // Configurar los datos del gráfico
+          const chartData = {
+            labels: labels,
+            datasets: [
+              {
+                label: "Nivel de gas",
+                data: measurements,
+                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                fill: true,
+                pointBorderColor: "rgba(255, 99, 132, 1)",
+                pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
+                pointRadius: 5,
+              },
+            ],
+          };
+
+          setChartData(chartData);
+        } else {
+          setChartData(null);
+        }
+
+        // Simula la carga de alarmas (puedes ajustar esta parte con datos reales de alarmas)
+        const alarmasSimuladas = [
+          { id: 1, fecha: "2024-10-16", hora: "23:35", nivelGas: 310, tipoGas: "CO" },
+          { id: 2, fecha: "2024-10-18", hora: "02:26", nivelGas: 30, tipoGas: "CO" },
+        ];
+
+        // Filtrar las alarmas entre el rango de fechas seleccionado
+        const formattedStartDate = moment(startDate).format("YYYY-MM-DD");
+        const formattedEndDate = moment(endDate).format("YYYY-MM-DD");
+        setAlarmas(
+          alarmasSimuladas.filter((a) =>
+            moment(a.fecha).isBetween(formattedStartDate, formattedEndDate, "day", "[]")
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-
-      setChartData(dataFromDevice[formattedDate] || null);
     };
 
-    fetchData();
-  }, [selectedDate]); // Refrescar cuando cambia la fecha seleccionada
+    fetchRealData();
+  }, [startDate, endDate]);
 
   // Función para manejar la apertura del modal
   const openModal = () => {
@@ -103,15 +103,26 @@ export default function HistoricoSensor() {
         <p>Tipo de gas: Monóxido de carbono</p>
         <p>Área: Fábrica 1</p>
 
-        {/* Selector de fecha */}
-        <div className="my-4">
-          <label className="mr-2">Seleccionar fecha:</label>
-          <DatePicker
-            selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
-            className="border border-gray-300 p-2 rounded-lg"
-            dateFormat="dd/MM/yyyy"
-          />
+        {/* Selector de rango de fechas */}
+        <div className="my-4 flex gap-4">
+          <div>
+            <label className="mr-2">Fecha de inicio:</label>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              className="border border-gray-300 p-2 rounded-lg"
+              dateFormat="dd/MM/yyyy"
+            />
+          </div>
+          <div>
+            <label className="mr-2">Fecha de fin:</label>
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              className="border border-gray-300 p-2 rounded-lg"
+              dateFormat="dd/MM/yyyy"
+            />
+          </div>
         </div>
 
         <div className="mt-6">
@@ -127,14 +138,16 @@ export default function HistoricoSensor() {
                   },
                   title: {
                     display: true,
-                    text: `Historial de niveles de gas para ${moment(selectedDate).format("LL")}`,
+                    text: `Historial de niveles de gas desde ${moment(startDate).format("LL")} hasta ${moment(
+                      endDate
+                    ).format("LL")}`,
                   },
                 },
                 scales: {
                   x: {
                     title: {
                       display: true,
-                      text: "Hora",
+                      text: "Fecha y hora",
                     },
                   },
                   y: {
@@ -143,28 +156,26 @@ export default function HistoricoSensor() {
                       text: "Nivel de gas",
                     },
                     beginAtZero: true,
-                    min: 300,
-                    max: 450, // Aumenta el máximo para permitir el pico
                   },
                 },
               }}
             />
           ) : (
-            <p>No hay datos para la fecha seleccionada.</p>
+            <p>No hay datos para el rango de fechas seleccionado.</p>
           )}
-        </div> 
-        
+        </div>
+
         <div className="flex justify-between items-center mt-8">
           <div className="flex items-center">
             <span className="mr-2">🔔</span>
             {alarmas.length > 0 ? (
-            <p>Alarma activada a las {alarmas[0].hora}</p> // Muestra la primera alarma del día
+              <p>Alarma activada a las {alarmas[0].hora}</p> // Muestra la primera alarma dentro del rango
             ) : (
-            <p>No se activaron alarmas en esta fecha.</p> // Si no hay alarmas, muestra este mensaje
+              <p>No se activaron alarmas en este rango de fechas.</p> // Si no hay alarmas, muestra este mensaje
             )}
           </div>
           <button onClick={openModal} className="p-2 bg-green-500 text-white rounded-lg">
-           Histórico de alarmas
+            Histórico de alarmas
           </button>
         </div>
 
@@ -174,8 +185,14 @@ export default function HistoricoSensor() {
             <h2 className="text-2xl font-bold mb-4">📅 Alarmas</h2>
             <div className="mb-4">
               <DatePicker
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                className="border border-gray-300 p-2 rounded-lg"
+                dateFormat="dd/MM/yyyy"
+              />
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
                 className="border border-gray-300 p-2 rounded-lg"
                 dateFormat="dd/MM/yyyy"
               />
@@ -197,7 +214,7 @@ export default function HistoricoSensor() {
                   </div>
                 ))
               ) : (
-                <p>No hay alarmas para la fecha seleccionada.</p>
+                <p>No hay alarmas para el rango de fechas seleccionado.</p>
               )}
             </div>
 

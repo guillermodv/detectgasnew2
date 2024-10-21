@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function SensorCard({
   sensorName,
-  gasType,
+  message,
   gasLevel,
   isActive,
 }) {
@@ -11,8 +11,8 @@ export default function SensorCard({
       {/* Información del sensor */}
       <div>
         <h2 className="text-lg font-semibold text-gray-700">{sensorName}</h2>
-        <p className="text-gray-600">Tipo de gas: {gasType}</p>
-        <p className="text-gray-600">Nivel de gas: {gasLevel}</p>
+        <p className="text-gray-600">{message}</p>
+        {isActive && <p className="text-gray-600">Nivel de gas: {gasLevel}</p>}
         <p className="text-gray-600">
           Área: {sensorName === 'DISPOSITIVO 1' ? 'Fábrica 1' : 'Fábrica 2'}
         </p>

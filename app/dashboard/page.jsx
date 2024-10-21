@@ -8,8 +8,9 @@ export default function Home() {
   const user = useContext(UserContext);
   const { userSession, setUserSession } = user;
 
-  // Estado para almacenar la última medición
+  // Estado para almacenar la última medición y su fecha
   const [latestMeasurement, setLatestMeasurement] = useState(null);
+  const [latestMeasurementTime, setLatestMeasurementTime] = useState(null);
 
   // Fetch para obtener la última medición del backend
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function Home() {
         // Obtenemos la última medición
         const lastMeasurement = data[data.length - 1]; // La última medición es el último elemento del array
         setLatestMeasurement(lastMeasurement.measurement); // Guardamos la medición
+        setLatestMeasurementTime(new Date(lastMeasurement.createdAt)); // Guardamos la marca de tiempo de la última medición
       } catch (error) {
         console.error("Error fetching measurements:", error);
       }
@@ -42,6 +44,16 @@ export default function Home() {
     }
   };
 
+  // Función para verificar si la última medición fue dentro de los últimos 10 minutos
+  const isMeasurementRecent = () => {
+    if (!latestMeasurementTime) return false;
+    
+    const currentTime = new Date();
+    const timeDifference = (currentTime - latestMeasurementTime) / 1000 / 60; // Diferencia en minutos
+    
+    return timeDifference <= 10;
+  };
+
   return (
     <div className="bg-gradient-to-b from-blue-200 to-blue-400 min-h-screen">
       <Header />
@@ -49,12 +61,11 @@ export default function Home() {
         <div className="space-y-6">
           <SensorCard
             sensorName="DISPOSITIVO 1"
-            gasType="Monóxido de Carbono"
+            message="Detector de niveles peligrosos de contaminación gaseosa"
             gasLevel={latestMeasurement ? `${latestMeasurement} ppm - ${getGasLevelText(latestMeasurement)}` : "Cargando..."} // Mostrar la última medición y el texto basado en el nivel de gas
-            isActive={true}
+            isActive={isMeasurementRecent()} // El dispositivo está activo solo si la medición es reciente
           />
         </div>
-
       </div>
     </div>
   );

@@ -11,16 +11,13 @@ import Header from "../components/Header";
 import Modal from "../components/Modal";
 
 export default function HistoricoSensor() {
-  // Estado para almacenar los datos del gráfico
   const [chartData, setChartData] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Controla el modal
-  const [startDate, setStartDate] = useState(new Date()); // Fecha de inicio
-  const [endDate, setEndDate] = useState(new Date()); // Fecha de fin
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [alarmas, setAlarmas] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
-  // Fetch para obtener los datos del backend y formatearlos para el gráfico
   useEffect(() => {
     setLoading(true);
     const fetchRealData = async () => {
@@ -33,11 +30,10 @@ export default function HistoricoSensor() {
         // Filtrar los datos por el rango de fechas seleccionado
         const filteredData = data.filter((item) => {
           const itemDate = moment(item.createdAt);
-          return itemDate.isBetween(startDate, endDate, "day", "[]"); // Incluye las fechas de inicio y fin
+          return itemDate.isBetween(startDate, endDate, "day", "[]");
         });
 
         if (filteredData.length > 0) {
-          // Crear etiquetas de tiempo y valores de medición
           const labels = filteredData.map((item) =>
             moment(item.createdAt).format("DD/MM/YYYY HH:mm")
           );
@@ -45,7 +41,6 @@ export default function HistoricoSensor() {
             parseFloat(item.measurement)
           );
 
-          // Configurar los datos del gráfico
           const chartData = {
             labels: labels,
             datasets: [
@@ -63,41 +58,23 @@ export default function HistoricoSensor() {
           };
 
           setChartData(chartData);
+
+          // Filtrar alarmas por nivel de gas mayor a 200 ppm
+          const alarmasFiltradas = filteredData
+            .filter((item) => item.measurement > 200) // Mediciones > 200 ppm
+            .map((item, index) => ({
+              id: index + 1,
+              fecha: moment(item.createdAt).format("YYYY-MM-DD"),
+              hora: moment(item.createdAt).format("HH:mm"),
+              nivelGas: item.measurement,
+              tipoGas: "CO", // Puedes ajustar según el tipo de gas
+            }));
+
+          setAlarmas(alarmasFiltradas); // Almacenar las alarmas filtradas
         } else {
           setChartData(null);
+          setAlarmas([]); // No hay alarmas si no hay datos
         }
-
-        // Simula la carga de alarmas (puedes ajustar esta parte con datos reales de alarmas)
-        const alarmasSimuladas = [
-          {
-            id: 1,
-            fecha: "2024-10-16",
-            hora: "23:35",
-            nivelGas: 310,
-            tipoGas: "CO",
-          },
-          {
-            id: 2,
-            fecha: "2024-10-18",
-            hora: "02:26",
-            nivelGas: 30,
-            tipoGas: "CO",
-          },
-        ];
-
-        // Filtrar las alarmas entre el rango de fechas seleccionado
-        const formattedStartDate = moment(startDate).format("YYYY-MM-DD");
-        const formattedEndDate = moment(endDate).format("YYYY-MM-DD");
-        setAlarmas(
-          alarmasSimuladas.filter((a) =>
-            moment(a.fecha).isBetween(
-              formattedStartDate,
-              formattedEndDate,
-              "day",
-              "[]"
-            )
-          )
-        );
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -108,12 +85,10 @@ export default function HistoricoSensor() {
     fetchRealData();
   }, [startDate, endDate]);
 
-  // Función para manejar la apertura del modal
   const openModal = () => {
     setIsModalOpen(true);
   };
 
-  // Función para cerrar el modal
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -135,7 +110,6 @@ export default function HistoricoSensor() {
         <p>Tipo de gas: Monóxido de carbono</p>
         <p>Área: Fábrica 1</p>
 
-        {/* Selector de rango de fechas */}
         <div className="my-4 flex gap-4">
           <div>
             <label className="mr-2">Fecha de inicio:</label>
@@ -164,7 +138,6 @@ export default function HistoricoSensor() {
         ) : null}
 
         <div className="mt-6">
-          {/* Componente del gráfico */}
           {chartData ? (
             <Line
               data={chartData}
@@ -207,9 +180,9 @@ export default function HistoricoSensor() {
           <div className="flex items-center">
             <span className="mr-2">🔔</span>
             {alarmas.length > 0 ? (
-              <p>Alarma activada a las {alarmas[0].hora}</p> // Muestra la primera alarma dentro del rango
+              <p>Alarma activada a las {alarmas[alarmas.length - 1]?.hora}</p>
             ) : (
-              <p>No se activaron alarmas en este rango de fechas.</p> // Si no hay alarmas, muestra este mensaje
+              <p>No se activaron alarmas en este rango de fechas.</p>
             )}
           </div>
           <button
@@ -220,7 +193,6 @@ export default function HistoricoSensor() {
           </button>
         </div>
 
-        {/* Modal para el historial de alarmas */}
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           <div>
             <h2 className="text-2xl font-bold mb-4">📅 Alarmas</h2>
@@ -239,8 +211,7 @@ export default function HistoricoSensor() {
               />
             </div>
 
-            {/* Lista de alarmas filtradas */}
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {alarmas.length > 0 ? (
                 alarmas.map((alarma) => (
                   <div
@@ -260,6 +231,7 @@ export default function HistoricoSensor() {
                 <p>No hay alarmas para el rango de fechas seleccionado.</p>
               )}
             </div>
+
 
             <button
               onClick={closeModal}

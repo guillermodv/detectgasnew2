@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function SensorCard({
   sensorName,
   gasType,
@@ -5,18 +7,32 @@ export default function SensorCard({
   isActive,
 }) {
   return (
-    <div className="flex items-center p-4 border rounded-lg shadow-sm">
-      <div className="ml-4 flex-1">
-        <h3 className="text-xl font-semibold">{sensorName}</h3>
-        <p>Tipo de gas: {gasType}</p>
-        <p>Nivel de gas: {gasLevel}</p>
-        <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          Historico del sensor
-        </button>
+    <div className="bg-blue-200 rounded-lg shadow-md p-6 flex justify-between items-center">
+      {/* Información del sensor */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-700">{sensorName}</h2>
+        <p className="text-gray-600">Tipo de gas: {gasType}</p>
+        <p className="text-gray-600">Nivel de gas: {gasLevel}</p>
+        <p className="text-gray-600">
+          Área: {sensorName === 'DISPOSITIVO 1' ? 'Fábrica 1' : 'Fábrica 2'}
+        </p>
+        
+        {/* Link al historial del sensor */}
+        <Link href="/historicoSensor" passHref>
+          <button
+            className={`mt-2 px-4 py-2 text-white rounded-lg ${
+              isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
+            }`}
+          >
+            Histórico del sensor
+          </button>
+        </Link>
       </div>
+
+      {/* Estado del sensor */}
       <div className="ml-4">
         {isActive ? (
-          <div className="text-green-500">
+          <div className="flex items-center text-green-500">
             <svg
               className="w-12 h-12"
               fill="none"
@@ -33,7 +49,7 @@ export default function SensorCard({
             </svg>
           </div>
         ) : (
-          <div className="text-red-500">
+          <div className="flex items-center text-red-500">
             <svg
               className="w-12 h-12"
               fill="none"

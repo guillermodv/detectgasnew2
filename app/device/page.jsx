@@ -43,6 +43,7 @@ function NewDevicePage() {
       areaDescription: values.area, // Agregar el área ingresada
       userId: userId, // Asociar el dispositivo con el usuario autenticado
     };
+    console.log("aca", newDevice);
 
     setLoading(true);
     setError(null);

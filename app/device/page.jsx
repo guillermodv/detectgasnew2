@@ -1,9 +1,8 @@
 "use client";
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
-import { useRouter } from "next/router";
-import Header from "../components/Header";  // Importar el header
+import Header from "../components/Header"; // Importar el header
 
 const validationSchema = Yup.object({
   name: Yup.string().required("El nombre del dispositivo es obligatorio"),
@@ -45,7 +44,7 @@ function NewDevicePage() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     try {
-        const response = await fetch(`${apiUrl}/devices`, {
+      const response = await fetch(`${apiUrl}/devices`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +54,8 @@ function NewDevicePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.message || "Error al registrar el dispositivo.";
+        const errorMessage =
+          errorData.message || "Error al registrar el dispositivo.";
         throw new Error(errorMessage);
       }
 
@@ -70,11 +70,10 @@ function NewDevicePage() {
   return (
     <>
       {/* Header con fondo blanco y su propio estilo */}
-      <Header /> 
+      <Header />
 
       {/* Contenedor principal del formulario */}
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300 pt-20">
-        {/* Ajustar el tamaño del recuadro a max-w-lg */}
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300 ">
         <div className="w-full max-w-lg">
           <div className="flex flex-col items-center gap-2">
             <h1 className="text-2xl font-bold mb-8">Nuevo Dispositivo</h1>
@@ -144,7 +143,9 @@ function NewDevicePage() {
                     name="deviceCode"
                     as="select"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.deviceCode && touched.deviceCode ? "border-red-500" : ""
+                      errors.deviceCode && touched.deviceCode
+                        ? "border-red-500"
+                        : ""
                     }`}
                   >
                     <option value="">Selecciona un código de equipo</option>

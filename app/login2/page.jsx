@@ -4,12 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as Yup from "yup";
 
-
-
 const saveDataToLocalstorage = (userSession) => {
-  localStorage.setItem('userWordle', JSON.stringify(userSession));
+  localStorage.setItem("userWordle", JSON.stringify(userSession));
 };
-
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -27,7 +24,7 @@ function LoginPage() {
   const [success, setSuccess] = useState(false);
 
   const initialValues = { email: "", password: "" };
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -36,24 +33,24 @@ function LoginPage() {
 
     try {
       const response = await fetch(`${apiUrl}/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); 
-        const errorMessage = errorData.message || 'Error';
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Error";
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log('Autenticated!:', data);
+      console.log("Authenticated!:", data);
       setSuccess(true);
-      saveDataToLocalstorage(data.user); 
-      router.push("/dashboard"); 
+      saveDataToLocalstorage(data.user);
+      router.push("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,10 +59,13 @@ function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
-      <div className="w-full max-w-xs">
+    <div
+      className="flex items-center justify-center min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: 'url("/fondo.jpg")' }}
+    >
+      <div className="w-full max-w-xs bg-white bg-opacity-80 p-6 rounded shadow-md">
         <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold mb-8">Vocab Lexic</h1>
+          <h1 className="text-2xl font-bold text-blue-600 mb-8">DetectGAS</h1>
         </div>
         <Formik
           initialValues={initialValues}
@@ -73,7 +73,7 @@ function LoginPage() {
           onSubmit={handleSubmit}
         >
           {({ errors, touched }) => (
-            <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <Form className="shadow-md rounded px-8 pt-6 pb-8 mb-4">
               <div className="mb-4">
                 <label
                   className="block text-blue-800 text-sm font-bold mb-2"
@@ -111,14 +111,14 @@ function LoginPage() {
                     errors.password && touched.password ? "border-red-500" : ""
                   }`}
                 />
-                        <div className="flex items-center justify-between mt-4">
-                <a
-                  className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
-                  href="recovery"
-                >
-                  No recuerdas la password?
-                </a>
-              </div>
+                <div className="flex items-center justify-between mt-4">
+                  <a
+                    className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
+                    href="recovery"
+                  >
+                    No recuerdas la password?
+                  </a>
+                </div>
                 <ErrorMessage
                   name="password"
                   component="p"
@@ -142,12 +142,18 @@ function LoginPage() {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   type="submit"
                 >
-                  {loading ? 'Loading...' : 'Log in'}
+                  {loading ? "Loading..." : "Log in"}
                 </button>
               </div>
-              
-              {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
-              {success && <p className="text-green-500 text-xs italic mt-2">Login successful!</p>}
+
+              {error && (
+                <p className="text-red-500 text-xs italic mt-2">{error}</p>
+              )}
+              {success && (
+                <p className="text-green-500 text-xs italic mt-2">
+                  Login successful!
+                </p>
+              )}
 
               <div className="flex items-center justify-between mt-4">
                 <a
@@ -155,11 +161,6 @@ function LoginPage() {
                   href="register"
                 >
                   ¿No tienes cuenta? Regístrate
-                </a>
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <a className="inline-block align-baseline text-sm" href="/">
-                  Jugar sin cuenta!
                 </a>
               </div>
             </Form>

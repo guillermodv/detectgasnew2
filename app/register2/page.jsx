@@ -33,25 +33,25 @@ function RegisterPage() {
     setError(null);
     setSuccess(false);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
 
     try {
       const response = await fetch(`${apiUrl}/user`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); 
-        const errorMessage = errorData.message || 'Error';
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Error";
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log('Authenticated:', data);
+      console.log("Authenticated:", data);
       setSuccess(true);
     } catch (err) {
       setError(err.message);
@@ -61,10 +61,13 @@ function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
+    <div
+      className="flex items-center justify-center min-h-screen bg-gradient-to-b"
+      style={{ backgroundImage: 'url("/fondo.jpg")' }}
+    >
       <div className="w-full max-w-xs">
-      <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold mb-8">Vocab Lexic</h1>
+        <div className="flex flex-col items-center gap-2">
+          <h1 className="text-2xl font-bold text-blue-50 mb-8">DetectGAS</h1>
         </div>
         <Formik
           initialValues={initialValues}
@@ -162,14 +165,20 @@ function RegisterPage() {
                   className="text-red-500 text-xs italic"
                 />
               </div>
-              {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
-              {success && <p className="text-green-500 text-xs italic mt-2">User registered successfully!</p>}
+              {error && (
+                <p className="text-red-500 text-xs italic mt-2">{error}</p>
+              )}
+              {success && (
+                <p className="text-green-500 text-xs italic mt-2">
+                  User registered successfully!
+                </p>
+              )}
               <div className="mt-4">
                 <button
                   className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   type="submit"
                 >
-                  {loading ? 'Iniciando sesión...' : 'Registrarse'}
+                  {loading ? "Iniciando sesión..." : "Registrarse"}
                 </button>
               </div>
 

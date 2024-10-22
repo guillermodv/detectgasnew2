@@ -180,7 +180,7 @@ export default function HistoricoSensor() {
           <div className="flex items-center">
             <span className="mr-2">🔔</span>
             {alarmas.length > 0 ? (
-              <p>Alarma activada a las {alarmas[alarmas.length - 1]?.hora}</p>
+              <p>Última alarma activada a las {alarmas[alarmas.length - 1]?.hora}</p>
             ) : (
               <p>No se activaron alarmas en este rango de fechas.</p>
             )}

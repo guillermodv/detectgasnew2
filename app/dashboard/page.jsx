@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import Header from "../components/Header";
 import SensorCard from "../components/SensorCard";
 import { UserContext } from "../context/userContext";
+import Link from "next/link"; // Importa Link para navegación
 
 export default function Home() {
   const user = useContext(UserContext);
@@ -65,6 +66,18 @@ export default function Home() {
             gasLevel={latestMeasurement ? `${latestMeasurement} ppm - ${getGasLevelText(latestMeasurement)}` : "Cargando..."} // Mostrar la última medición y el texto basado en el nivel de gas
             isActive={isMeasurementRecent()} // El dispositivo está activo solo si la medición es reciente
           />
+
+          {/* Botones centrados */}
+          <div className="flex justify-center space-x-4">
+            <Link href="/device" passHref>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded">
+                Agregar Dispositivo
+              </button>
+            </Link>
+            <button onClick={() => console.log("Eliminar dispositivo")} className="bg-red-500 text-white px-4 py-2 rounded">
+              Eliminar Dispositivo
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -19,10 +19,11 @@ function NewDevicePage() {
   const initialValues = {
     name: "",
     area: "",
-    deviceCode: "",
+    deviceCode: "", // Código ingresado por el usuario
   };
 
   useEffect(() => {
+    // Obtener usuario desde localStorage
     const userSession = localStorage.getItem("userWordle");
     if (userSession) {
       const user = JSON.parse(userSession);
@@ -36,15 +37,21 @@ function NewDevicePage() {
       return;
     }
 
-    const newDevice = { ...values, userId };
+    const newDevice = {
+      deviceId: values.deviceCode, // Usamos el deviceCode como el deviceId
+      name: values.name,
+      areaDescription: values.area, // Agregar el área ingresada
+      userId: userId, // Asociar el dispositivo con el usuario autenticado
+    };
+
     setLoading(true);
     setError(null);
     setSuccess(false);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://detectgas.brazilsouth.cloudapp.azure.com:3001";
 
     try {
-      const response = await fetch(`${apiUrl}/devices`, {
+      const response = await fetch(`${apiUrl}/device`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,8 +61,7 @@ function NewDevicePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage =
-          errorData.message || "Error al registrar el dispositivo.";
+        const errorMessage = errorData.message || "Error al registrar el dispositivo.";
         throw new Error(errorMessage);
       }
 
@@ -73,7 +79,7 @@ function NewDevicePage() {
       <Header />
 
       {/* Contenedor principal del formulario */}
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300 ">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
         <div className="w-full max-w-lg">
           <div className="flex flex-col items-center gap-2">
             <h1 className="text-2xl font-bold mb-8">Nuevo Dispositivo</h1>
@@ -116,15 +122,12 @@ function NewDevicePage() {
                   </label>
                   <Field
                     name="area"
-                    as="select"
+                    type="text"
+                    placeholder="Área"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
                       errors.area && touched.area ? "border-red-500" : ""
                     }`}
-                  >
-                    <option value="">Selecciona un área</option>
-                    <option value="1">Fábrica 1</option>
-                    <option value="2">Fábrica 2</option>
-                  </Field>
+                  />
                   <ErrorMessage
                     name="area"
                     component="p"
@@ -141,17 +144,14 @@ function NewDevicePage() {
                   </label>
                   <Field
                     name="deviceCode"
-                    as="select"
+                    type="text"
+                    placeholder="Código de equipo"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
                       errors.deviceCode && touched.deviceCode
                         ? "border-red-500"
                         : ""
                     }`}
-                  >
-                    <option value="">Selecciona un código de equipo</option>
-                    <option value="A123">A123</option>
-                    <option value="B456">B456</option>
-                  </Field>
+                  />
                   <ErrorMessage
                     name="deviceCode"
                     component="p"

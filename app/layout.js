@@ -27,6 +27,7 @@ export default function RootLayout({ children }) {
     if (
       (!userSession || userSession.username === "") &&
       pathname !== "/login" &&
+      pathname !== "/device" &&
       pathname !== "/recovery" &&
       pathname !== "/login2" &&
       pathname !== "/register" &&

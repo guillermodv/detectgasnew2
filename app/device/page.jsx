@@ -38,10 +38,11 @@ function NewDevicePage() {
     }
 
     const newDevice = {
-      deviceId: values.deviceCode, // Usamos el deviceCode como el deviceId
+      idDevice: values.deviceCode, // Usamos el deviceCode como el deviceId
       name: values.name,
+      idArea: 1,
       areaDescription: values.area, // Agregar el área ingresada
-      userId: userId, // Asociar el dispositivo con el usuario autenticado
+      idUser: userId, // Asociar el dispositivo con el usuario autenticado
     };
     console.log("aca", newDevice);
 
@@ -49,7 +50,9 @@ function NewDevicePage() {
     setError(null);
     setSuccess(false);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://detectgas.brazilsouth.cloudapp.azure.com:3001";
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://detectgas.brazilsouth.cloudapp.azure.com:3001";
 
     try {
       const response = await fetch(`${apiUrl}/device`, {
@@ -60,9 +63,12 @@ function NewDevicePage() {
         body: JSON.stringify(newDevice),
       });
 
+      console.log("newDevice", newDevice);
+
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.message || "Error al registrar el dispositivo.";
+        const errorMessage =
+          errorData.message || "Error al registrar el dispositivo.";
         throw new Error(errorMessage);
       }
 

@@ -1,8 +1,9 @@
 "use client";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
-import Header from "../components/Header"; // Importar el header
+import Header from "../components/Header";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("El nombre del dispositivo es obligatorio"),
@@ -11,51 +12,51 @@ const validationSchema = Yup.object({
 });
 
 function NewDevicePage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [userSession, setUserSession] = useState(null);
 
   const initialValues = {
     name: "",
     area: "",
-    deviceCode: "", // Código ingresado por el usuario
+    deviceCode: "",
   };
 
   useEffect(() => {
-    // Obtener usuario desde localStorage
-    const userSession = localStorage.getItem("userWordle");
-    if (userSession) {
-      const user = JSON.parse(userSession);
-      setUserId(user.id);
+    // Obtener usuario desde localStorage con la clave correcta
+    const storedUser = localStorage.getItem("userApp");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserSession(user);
+    } else {
+      // Si no hay usuario, redirigir al login
+      router.push("/login2");
     }
-  }, []);
+  }, [router]);
 
   const handleSubmit = async (values) => {
-    if (!userId) {
+    if (!userSession) {
       setError("Usuario no autenticado.");
       return;
     }
 
     const newDevice = {
-      idDevice: values.deviceCode, // Usamos el deviceCode como el deviceId
+      idDevice: values.deviceCode, // Cambiado de deviceId a idDevice
       name: values.name,
       idArea: 1,
-      areaDescription: values.area, // Agregar el área ingresada
-      idUser: userId, // Asociar el dispositivo con el usuario autenticado
+      areaDescription: values.area,
+      idUser: userSession.id, // Cambiado de userId a idUser
+      enabled: true
     };
-    console.log("aca", newDevice);
 
     setLoading(true);
     setError(null);
     setSuccess(false);
 
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://detectgas.brazilsouth.cloudapp.azure.com:3001";
-
     try {
-      const response = await fetch(`${apiUrl}/device`, {
+      const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/device", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,18 +64,35 @@ function NewDevicePage() {
         body: JSON.stringify(newDevice),
       });
 
-      console.log("newDevice", newDevice);
-
+      // Primero verificamos si la respuesta es OK
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.message || "Error al registrar el dispositivo.";
-        throw new Error(errorMessage);
+        // Si la respuesta no es OK, intentamos obtener el mensaje de error
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Error al registrar el dispositivo.");
+        } catch (jsonError) {
+          // Si no podemos parsear la respuesta como JSON, usamos el texto de la respuesta
+          const errorText = await response.text();
+          throw new Error(`Error al registrar el dispositivo: ${errorText}`);
+        }
+      }
+
+      // Si la respuesta es OK, intentamos parsear la respuesta
+      try {
+        const data = await response.json();
+        console.log("Dispositivo creado:", data);
+      } catch (jsonError) {
+        console.log("Respuesta exitosa pero no es JSON");
       }
 
       setSuccess(true);
+      // Redirigir al dashboard después de un registro exitoso
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
     } catch (err) {
       setError(err.message);
+      console.error("Error completo:", err);
     } finally {
       setLoading(false);
     }
@@ -82,10 +100,7 @@ function NewDevicePage() {
 
   return (
     <>
-      {/* Header con fondo blanco y su propio estilo */}
       <Header />
-
-      {/* Contenedor principal del formulario */}
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
         <div className="w-full max-w-lg">
           <div className="flex flex-col items-center gap-2">

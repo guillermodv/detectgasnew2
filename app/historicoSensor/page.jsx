@@ -1,6 +1,5 @@
 "use client";
-
-import "chart.js/auto";
+import { usePathname, useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
@@ -10,7 +9,32 @@ import { PuffLoader } from "react-spinners";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
 
+import {
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Chart as ChartJS,
+} from "chart.js";
+
+// Registrar componentes
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 export default function HistoricoSensor() {
+  const searchParams = useSearchParams();
+  const deviceId = searchParams.get("deviceId"); // Obtén el deviceId desde la URL
+
   const [chartData, setChartData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -19,18 +43,18 @@ export default function HistoricoSensor() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!deviceId) return; // Espera hasta que deviceId esté disponible
+
     setLoading(true);
     const fetchRealData = async () => {
       try {
-        const response = await fetch(
-          "http://detectgas.brazilsouth.cloudapp.azure.com:3001/cores"
-        );
+        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures");
         const data = await response.json();
 
-        // Filtrar los datos por el rango de fechas seleccionado
+        // Filtrar los datos por deviceId y rango de fechas seleccionado
         const filteredData = data.filter((item) => {
           const itemDate = moment(item.createdAt);
-          return itemDate.isBetween(startDate, endDate, "day", "[]");
+          return item.deviceId === parseInt(deviceId) && itemDate.isBetween(startDate, endDate, "day", "[]");
         });
 
         if (filteredData.length > 0) {
@@ -59,21 +83,20 @@ export default function HistoricoSensor() {
 
           setChartData(chartData);
 
-          // Filtrar alarmas por nivel de gas mayor a 200 ppm
           const alarmasFiltradas = filteredData
-            .filter((item) => item.measurement > 200) // Mediciones > 200 ppm
+            .filter((item) => item.measurement > 200)
             .map((item, index) => ({
               id: index + 1,
               fecha: moment(item.createdAt).format("YYYY-MM-DD"),
               hora: moment(item.createdAt).format("HH:mm"),
               nivelGas: item.measurement,
-              tipoGas: "CO", // Puedes ajustar según el tipo de gas
+              tipoGas: "CO",
             }));
 
-          setAlarmas(alarmasFiltradas); // Almacenar las alarmas filtradas
+          setAlarmas(alarmasFiltradas);
         } else {
           setChartData(null);
-          setAlarmas([]); // No hay alarmas si no hay datos
+          setAlarmas([]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -83,7 +106,7 @@ export default function HistoricoSensor() {
     };
 
     fetchRealData();
-  }, [startDate, endDate]);
+  }, [deviceId, startDate, endDate]); // Agrega deviceId como dependencia
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -98,7 +121,7 @@ export default function HistoricoSensor() {
       <Header />
       <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
         <div className="flex justify-between">
-          <h1 className="text-xl font-bold">Dispositivo 1</h1>
+          <h1 className="text-xl font-bold">Dispositivo {deviceId}</h1>
           <button
             onClick={() => window.history.back()}
             className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
@@ -196,21 +219,6 @@ export default function HistoricoSensor() {
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           <div>
             <h2 className="text-2xl font-bold mb-4">📅 Alarmas</h2>
-            <div className="mb-4">
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                className="border border-gray-300 p-2 rounded-lg"
-                dateFormat="dd/MM/yyyy"
-              />
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
-                className="border border-gray-300 p-2 rounded-lg"
-                dateFormat="dd/MM/yyyy"
-              />
-            </div>
-
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {alarmas.length > 0 ? (
                 alarmas.map((alarma) => (
@@ -231,7 +239,6 @@ export default function HistoricoSensor() {
                 <p>No hay alarmas para el rango de fechas seleccionado.</p>
               )}
             </div>
-
 
             <button
               onClick={closeModal}

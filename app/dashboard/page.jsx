@@ -92,10 +92,11 @@ export default function Home() {
             return (
               <SensorCard
                 key={device.deviceId}
+                deviceId={device.deviceId} // Añadir deviceId aquí
                 sensorName={device.name}
-                message={`Área: ${device.areaDescription}`}  // Aquí pasamos solo el área
+                message={`Área: ${device.areaDescription}`}
                 gasLevel={
-                  lastMeasurementData  // Aquí pasamos la medición de gas
+                  lastMeasurementData
                     ? `${lastMeasurement} ppm - ${getGasLevelText(lastMeasurement)}`
                     : "Cargando..."
                 }
@@ -147,3 +148,4 @@ const isMeasurementRecent = (measurementTime) => {
   const timeDifference = (currentTime - measurementTime) / 1000 / 60;
   return timeDifference <= 10;
 };
+

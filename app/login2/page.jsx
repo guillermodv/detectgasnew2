@@ -159,7 +159,7 @@ function LoginPage() {
               <div className="flex items-center justify-between mt-4">
                 <a
                   className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
-                  href="register"
+                  href="register2"
                 >
                   ¿No tienes cuenta? Regístrate
                 </a>

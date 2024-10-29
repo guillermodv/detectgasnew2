@@ -5,18 +5,19 @@ export default function SensorCard({
   message,
   gasLevel,
   isActive,
+  deviceId // Añadir el parámetro deviceId
 }) {
   return (
     <div className="bg-blue-200 rounded-lg shadow-md p-6 flex justify-between items-center">
       {/* Información del sensor */}
       <div>
         <h2 className="text-lg font-semibold text-gray-700">{sensorName}</h2>
-        <p className="text-gray-500">Detector de niveles peligrosos de contaminación gaseosa</p>  {/* Texto agregado */}
+        <p className="text-gray-500">Detector de niveles peligrosos de contaminación gaseosa</p>
         <p className="text-gray-600">{message}</p>
         {isActive && <p className="text-gray-600">Nivel de gas: {gasLevel}</p>}
 
-        {/* Link al historial del sensor */}
-        <Link href="/historicoSensor" passHref>
+        {/* Link al historial del sensor con el deviceId */}
+        <Link href={`/historicoSensor?deviceId=${deviceId}`} passHref>
           <button
             className={`mt-2 px-4 py-2 text-white rounded-lg ${
               isActive ? 'bg-[#00AD86] hover:bg-[#259C75]' : 'bg-[#CB213E] hover:bg-[#AF212D]'

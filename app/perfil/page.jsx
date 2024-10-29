@@ -1,11 +1,32 @@
 "use client";
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Header from "../components/Header";
 import { UserContext } from "../context/userContext";
 
 export default function UserProfile() {
   const { userSession } = useContext(UserContext);
+  const [userDevices, setUserDevices] = useState([]); // Estado para almacenar los dispositivos del usuario
+
+  useEffect(() => {
+    if (!userSession) return; // Espera hasta que userSession esté disponible
+
+    // Función para obtener dispositivos
+    const fetchUserDevices = async () => {
+      try {
+        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices");
+        const devices = await response.json();
+
+        // Filtrar dispositivos que pertenecen al usuario actual
+        const userDevices = devices.filter(device => device.userId === userSession.id);
+        setUserDevices(userDevices);
+      } catch (error) {
+        console.error("Error fetching devices:", error);
+      }
+    };
+
+    fetchUserDevices();
+  }, [userSession]);
 
   if (!userSession) {
     return <p>Cargando datos del usuario...</p>;
@@ -41,7 +62,7 @@ export default function UserProfile() {
             </div>
             <div className="flex items-center text-lg">
               <span className="font-semibold mr-1">Dispositivos conectados:</span>
-              <span>1</span> {/* Hardcodeado como 1 */}
+              <span>{userDevices.length}</span> {/* Mostrar el número de dispositivos */}
             </div>
           </div>
         </div>

@@ -185,7 +185,7 @@ function RegisterPage() {
               <div className="flex items-center justify-between mt-4">
                 <a
                   className="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800"
-                  href="login"
+                  href="login2"
                 >
                   ¿Ya tienes una cuenta? Inicia sesión
                 </a>

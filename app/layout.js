@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
       pathname !== "/dashboard" &&
       pathname !== "/historicoSensor"
     ) {
-      router.push("/login");
+      router.push("/login2");
     }
   }, [userSession, pathname]); // Añadir pathname como dependencia
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
+import { useRouter } from "next/navigation"; // Importar useRouter
 import { useContext } from "react";
 import { UserContext } from "../context/userContext";
-import { useRouter } from "next/navigation"; // Importar useRouter
 
 export default function Header() {
   const user = useContext(UserContext);
@@ -17,13 +17,24 @@ export default function Header() {
     <header className="bg-gray-100 p-4 shadow-md flex items-center justify-between">
       <div className="flex items-center">
         <div className="mt-[-6px]">
-          <Image src="/logo1.PNG" alt="Detect Gas Logo" width={60} height={60} priority />
+          <Image
+            src="/logo1.PNG"
+            alt="Detect Gas Logo"
+            width={60}
+            height={60}
+            priority
+          />
         </div>
         <div className="ml-5 mt-2">
-         <Image src="/detect_letras.PNG" alt="Detect Gas Letras" width={140} height={140} priority />
+          <Image
+            src="/detect_letras.PNG"
+            alt="Detect Gas Letras"
+            width={140}
+            height={140}
+            priority
+          />
         </div>
       </div>
-
 
       <nav className="absolute left-1/2 transform -translate-x-1/2">
         <ul className="flex space-x-8 text-lg font-extrabold text-[#00368a]">
@@ -49,8 +60,18 @@ export default function Header() {
       </nav>
 
       <div className="flex items-center rounded-md">
-        <span className="mr-2 mt-0.5 font-bold">{userSession ? userSession.name : "Usuario"}</span> {/* Mostrar nombre del usuario */}
-        <Image className="mt-[-5px]" src="/robot.PNG" alt="Profile Image" width={50} height={50} priority />
+        <span className="mr-2 mt-0.5 font-bold">
+          {userSession ? userSession.name : "Usuario"}
+        </span>{" "}
+        {/* Mostrar nombre del usuario */}
+        <Image
+          className="mt-[-5px]"
+          src="/robot.PNG"
+          alt="Profile Image"
+          width={50}
+          height={50}
+          priority
+        />
       </div>
     </header>
   );

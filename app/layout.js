@@ -1,9 +1,9 @@
 "use client";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { UserContext } from "./context/userContext";
-import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
 
   useEffect(() => {
     // Intentar cargar el usuario desde localStorage al iniciar el componente
-    const storedUser = localStorage.getItem("userWordle");
+    const storedUser = localStorage.getItem("userApp");
     if (storedUser) {
       setUserSession(JSON.parse(storedUser));
     }

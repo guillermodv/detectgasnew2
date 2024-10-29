@@ -1,12 +1,13 @@
 "use client";
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import * as Yup from "yup";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useContext, useState } from "react";
+import * as Yup from "yup";
+import { UserContext } from "../context/userContext";
 
 const saveDataToLocalstorage = (userSession) => {
-  localStorage.setItem("userWordle", JSON.stringify(userSession));
+  localStorage.setItem("userApp", JSON.stringify(userSession));
 };
 
 const validationSchema = Yup.object({
@@ -23,6 +24,9 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  const user = useContext(UserContext);
+  const { setUserSession } = user;
 
   const initialValues = { email: "", password: "" };
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
@@ -51,6 +55,8 @@ function LoginPage() {
       console.log("Authenticated!:", data);
       setSuccess(true);
       saveDataToLocalstorage(data.user);
+      setUserSession(data.user);
+      console.log(data.user);
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -66,7 +72,13 @@ function LoginPage() {
     >
       <div className="w-full max-w-xs bg-white bg-opacity-80 p-6 rounded shadow-md">
         <div className="flex flex-col items-center gap-2">
-          <Image src="/Logo_Completo.PNG" alt="Login Image" width={165} height={165} priority />
+          <Image
+            src="/Logo_Completo.PNG"
+            alt="Login Image"
+            width={165}
+            height={165}
+            priority
+          />
         </div>
         <Formik
           initialValues={initialValues}

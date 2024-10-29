@@ -3,6 +3,7 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as Yup from "yup";
+import Image from "next/image";
 
 const saveDataToLocalstorage = (userSession) => {
   localStorage.setItem("userWordle", JSON.stringify(userSession));
@@ -65,7 +66,7 @@ function LoginPage() {
     >
       <div className="w-full max-w-xs bg-white bg-opacity-80 p-6 rounded shadow-md">
         <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold text-blue-600 mb-8">DetectGAS</h1>
+          <Image src="/Logo_Completo.PNG" alt="Login Image" width={165} height={165} priority />
         </div>
         <Formik
           initialValues={initialValues}
@@ -113,7 +114,7 @@ function LoginPage() {
                 />
                 <div className="flex items-center justify-between mt-4">
                   <a
-                    className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
+                    className="mt-[-22px] inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
                     href="recovery"
                   >
                     ¿No recuerdas la contraseña?
@@ -127,7 +128,7 @@ function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="inline-flex items-center">
+                <label className="mt-[-12px] inline-flex items-center">
                   <Field
                     type="checkbox"
                     name="rememberMe"

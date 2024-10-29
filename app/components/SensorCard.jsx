@@ -19,7 +19,7 @@ export default function SensorCard({
         <Link href="/historicoSensor" passHref>
           <button
             className={`mt-2 px-4 py-2 text-white rounded-lg ${
-              isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
+              isActive ? 'bg-[#00AD86] hover:bg-[#259C75]' : 'bg-[#CB213E] hover:bg-[#AF212D]'
             }`}
           >
             Histórico del sensor

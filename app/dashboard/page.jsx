@@ -75,7 +75,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-blue-200 to-blue-400 min-h-screen">
+    <div className="bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen">
       <Header />
       <div className="container mx-auto p-6">
         <div className="space-y-6">
@@ -107,13 +107,13 @@ export default function Home() {
           {/* Botones centrados */}
           <div className="flex justify-center space-x-4">
             <Link href="/device" passHref>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded">
+              <button className="bg-[#00D1B8] text-white px-4 py-2 rounded">
                 Agregar Dispositivo
               </button>
             </Link>
             <button
               onClick={() => console.log("Eliminar dispositivo")}
-              className="bg-red-500 text-white px-4 py-2 rounded"
+              className="bg-[#FF0000] text-white px-4 py-2 rounded"
             >
               Eliminar Dispositivo
             </button>

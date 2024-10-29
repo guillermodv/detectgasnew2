@@ -94,14 +94,14 @@ export default function HistoricoSensor() {
   };
 
   return (
-    <div>
+    <div className="bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen">
       <Header />
       <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
         <div className="flex justify-between">
           <h1 className="text-xl font-bold">Dispositivo 1</h1>
           <button
             onClick={() => window.history.back()}
-            className="p-2 bg-gray-200 rounded-lg"
+            className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
           >
             ← Volver
           </button>
@@ -187,7 +187,7 @@ export default function HistoricoSensor() {
           </div>
           <button
             onClick={openModal}
-            className="p-2 bg-green-500 text-white rounded-lg"
+            className="p-2 bg-[#00AD86] hover:bg-[#259C75] text-white rounded-lg"
           >
             Histórico de alarmas
           </button>

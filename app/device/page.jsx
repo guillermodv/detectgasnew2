@@ -101,11 +101,8 @@ function NewDevicePage() {
   return (
     <>
       <Header />
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
-        <div className="w-full max-w-lg">
-          <div className="flex flex-col items-center gap-2">
-            <h1 className="text-2xl font-bold mb-8">Nuevo Dispositivo</h1>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#61AFB6] to-[#3862A4]">
+        <div className="w-full max-w-lg mb-40">
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -114,6 +111,7 @@ function NewDevicePage() {
             {({ errors, touched }) => (
               <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <div className="mb-4">
+                <h1 className="text-2xl text-[#00368a] text-center font-bold mb-8">Nuevo Dispositivo</h1>
                   <label
                     className="block text-blue-800 text-sm font-bold mb-2"
                     htmlFor="name"

@@ -10,6 +10,12 @@ import { UserContext } from "../context/userContext";
 export default function Dashboard() {
   const user = useContext(UserContext);
   const { userSession } = user;
+  const [showModal, setShowModal] = useState(false);
+
+  const confirmDelete = (device) => {
+    setDeviceToDelete(device); // Establecer el dispositivo que se desea eliminar
+    setShowModal(true); // Mostrar el modal de confirmación
+  };
 
   console.log("user Session--->", userSession);
   const [devices, setDevices] = useState([]);
@@ -95,9 +101,6 @@ export default function Dashboard() {
     }
   };
 
-  const confirmDelete = (device) => {
-    setDeviceToDelete(device); // Establecer el dispositivo que se desea eliminar
-  };
 
   const handleDeleteDevice = async (deviceId) => {
     try {
@@ -186,28 +189,34 @@ export default function Dashboard() {
             );
           })}
 
-          {deviceToDelete && (
-            <div className="modal">
-              <div className="modal-content">
-                <p>
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <p className="mb-4">
                   ¿Está seguro que desea eliminar el dispositivo{" "}
-                  {deviceToDelete.name}?
+                  {deviceToDelete?.name}?
                 </p>
-                <button
-                  onClick={() => handleDeleteDevice(deviceToDelete.deviceId)}
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                >
-                  Sí, eliminar
-                </button>
-                <button
-                  onClick={() => setDeviceToDelete(null)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded ml-2"
-                >
-                  Cancelar
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      handleDeleteDevice(deviceToDelete.deviceId);
+                      setShowModal(false); // Cerrar el modal después de eliminar
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded ml-2"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
             </div>
           )}
+
 
           <div className="flex justify-center space-x-4 mt-6">
             <Link href="/device" passHref>

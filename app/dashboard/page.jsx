@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [devices, setDevices] = useState([]);
   const [measurements, setMeasurements] = useState([]);
   const [lastNotifiedMeasurement, setLastNotifiedMeasurement] = useState(null); // Estado para evitar notificaciones duplicadas
+  const [deviceToDelete, setDeviceToDelete] = useState(null); // Estado para seleccionar el dispositivo a eliminar
 
   // Referencia al elemento de audio
   const audioRef = useRef(null);
@@ -94,6 +95,47 @@ export default function Dashboard() {
     }
   };
 
+  const confirmDelete = (device) => {
+    setDeviceToDelete(device); // Establecer el dispositivo que se desea eliminar
+  };
+
+  const handleDeleteDevice = async (deviceId) => {
+    try {
+      const response = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/device/${deviceId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Eliminar el dispositivo del estado local
+        setDevices((prevDevices) =>
+          prevDevices.filter((device) => device.deviceId !== deviceId)
+        );
+
+        // Mostrar un mensaje de éxito
+        toast.success("Dispositivo eliminado con éxito", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: true,
+        });
+      } else {
+        throw new Error("Error eliminando el dispositivo");
+      }
+    } catch (error) {
+      console.error("Error eliminando el dispositivo:", error);
+      toast.error("Hubo un problema al eliminar el dispositivo", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: true,
+      });
+    }
+  };
+
+  const isMeasurementRecent = (measurementTime) => {
+    const currentTime = new Date();
+    const timeDifference = (currentTime - measurementTime) / 1000 / 60;
+    return timeDifference <= 10;
+  };
+
   return (
     <div className="bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen">
       <Header />
@@ -119,39 +161,60 @@ export default function Dashboard() {
             }
 
             return (
-              <SensorCard
-                key={device.deviceId}
-                deviceId={device.deviceId} // Añadir deviceId aquí
-                sensorName={device.name}
-                message={`Área: ${device.areaDescription}`}
-                gasLevel={
-                  lastMeasurementData
-                    ? `${lastMeasurement} ppm - ${getGasLevelText(
-                        lastMeasurement
-                      )}`
-                    : "Cargando..."
-                }
-                isActive={
-                  lastMeasurementTime &&
-                  isMeasurementRecent(lastMeasurementTime)
-                }
-              />
+              <div key={device.deviceId} className="relative">
+                <SensorCard
+                  deviceId={device.deviceId}
+                  sensorName={device.name}
+                  message={`Área: ${device.areaDescription}`}
+                  gasLevel={
+                    lastMeasurementData
+                      ? `${lastMeasurement} ppm - ${getGasLevelText(lastMeasurement)}`
+                      : "Cargando..."
+                  }
+                  isActive={
+                    lastMeasurementTime && isMeasurementRecent(lastMeasurementTime)
+                  }
+                />
+                {/* Botón de eliminación con icono de tacho de basura */}
+                <button
+                  onClick={() => confirmDelete(device)}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                >
+                  🗑️
+                </button>
+              </div>
             );
           })}
 
-          {/* Botones centrados */}
-          <div className="flex justify-center space-x-4">
+          {deviceToDelete && (
+            <div className="modal">
+              <div className="modal-content">
+                <p>
+                  ¿Está seguro que desea eliminar el dispositivo{" "}
+                  {deviceToDelete.name}?
+                </p>
+                <button
+                  onClick={() => handleDeleteDevice(deviceToDelete.deviceId)}
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
+                  Sí, eliminar
+                </button>
+                <button
+                  onClick={() => setDeviceToDelete(null)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded ml-2"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-center space-x-4 mt-6">
             <Link href="/device" passHref>
-              <button className="bg-[#00D1B8] text-white px-4 py-2 rounded">
+              <button className="bg-[#00AD86] hover:bg-[#259C75] text-white px-4 py-2 rounded">
                 Agregar Dispositivo
               </button>
             </Link>
-            <button
-              onClick={() => console.log("Eliminar dispositivo")}
-              className="bg-[#FF0000] text-white px-4 py-2 rounded"
-            >
-              Eliminar Dispositivo
-            </button>
           </div>
         </div>
       </div>
@@ -173,10 +236,4 @@ const getGasLevelText = (measurement) => {
   } else {
     return "Nivel de Gas Muy Alto";
   }
-};
-
-const isMeasurementRecent = (measurementTime) => {
-  const currentTime = new Date();
-  const timeDifference = (currentTime - measurementTime) / 1000 / 60;
-  return timeDifference <= 10;
 };

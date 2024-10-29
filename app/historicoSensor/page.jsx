@@ -90,7 +90,6 @@ export default function HistoricoSensor() {
               fecha: moment(item.createdAt).format("YYYY-MM-DD"),
               hora: moment(item.createdAt).format("HH:mm"),
               nivelGas: item.measurement,
-              tipoGas: "CO",
             }));
 
           setAlarmas(alarmasFiltradas);
@@ -232,7 +231,6 @@ export default function HistoricoSensor() {
                     <span>
                       Nivel de gas: <b>{alarma.nivelGas}</b>
                     </span>
-                    <span className="text-blue-500">{alarma.tipoGas}</span>
                   </div>
                 ))
               ) : (

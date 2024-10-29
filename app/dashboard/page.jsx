@@ -7,7 +7,7 @@ import Link from "next/link";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';  // Importa el CSS
 
-export default function Home() {
+export default function Dashboard() {
   const user = useContext(UserContext);
   const { userSession } = user;
 
@@ -18,27 +18,36 @@ export default function Home() {
   // Referencia al elemento de audio
   const audioRef = useRef(null);
 
-  useEffect(() => {
-    async function fetchDevicesAndMeasurements() {
-      try {
-        // 1. Obtener los dispositivos del usuario logueado
-        const devicesResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices`);
-        const devicesData = await devicesResponse.json();
-        const userDevices = devicesData.filter(device => device.userId === userSession.id);
-        setDevices(userDevices);
+  const fetchDevicesAndMeasurements = async () => {
+    try {
+      // 1. Obtener los dispositivos del usuario logueado
+      const devicesResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices`);
+      const devicesData = await devicesResponse.json();
+      const userDevices = devicesData.filter(device => device.userId === userSession.id);
+      setDevices(userDevices);
 
-        // 2. Obtener las mediciones para esos dispositivos
-        const measuresResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures`);
-        const measuresData = await measuresResponse.json();
-        setMeasurements(measuresData);
+      // 2. Obtener las mediciones para esos dispositivos
+      const measuresResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures`);
+      const measuresData = await measuresResponse.json();
+      setMeasurements(measuresData);
 
-      } catch (error) {
-        console.error("Error fetching devices and measurements:", error);
-      }
+    } catch (error) {
+      console.error("Error fetching devices and measurements:", error);
     }
+  };
 
+  useEffect(() => {
+    // Cargar los datos inicialmente
     fetchDevicesAndMeasurements();
-  }, [userSession]);
+
+    // Establecer un intervalo para actualizar los datos cada 20 segundos
+    const intervalId = setInterval(() => {
+      fetchDevicesAndMeasurements();
+    }, 20000); // 20 segundos
+
+    // Limpiar el intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
+  }, [userSession]); // Puedes agregar dependencias adicionales si es necesario
 
   const getDeviceLastMeasurement = (deviceId) => {
     // Encuentra la última medición para este dispositivo
@@ -148,4 +157,3 @@ const isMeasurementRecent = (measurementTime) => {
   const timeDifference = (currentTime - measurementTime) / 1000 / 60;
   return timeDifference <= 10;
 };
-

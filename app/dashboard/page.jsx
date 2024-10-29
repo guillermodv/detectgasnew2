@@ -9,77 +9,69 @@ import 'react-toastify/dist/ReactToastify.css';  // Importa el CSS
 
 export default function Home() {
   const user = useContext(UserContext);
-  const { userSession, setUserSession } = user;
+  const { userSession } = user;
 
-  const [latestMeasurement, setLatestMeasurement] = useState(null);
-  const [latestMeasurementTime, setLatestMeasurementTime] = useState(null);
-  const [isAlarm, setIsAlarm] = useState(false);
+  const [devices, setDevices] = useState([]);
+  const [measurements, setMeasurements] = useState([]);
+  const [lastNotifiedMeasurement, setLastNotifiedMeasurement] = useState(null); // Estado para evitar notificaciones duplicadas
 
   // Referencia al elemento de audio
   const audioRef = useRef(null);
 
   useEffect(() => {
-    async function fetchLatestMeasurement() {
+    async function fetchDevicesAndMeasurements() {
       try {
-        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/cores");
-        const data = await response.json();
+        // 1. Obtener los dispositivos del usuario logueado
+        const devicesResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices`);
+        const devicesData = await devicesResponse.json();
+        const userDevices = devicesData.filter(device => device.userId === userSession.id);
+        setDevices(userDevices);
 
-        const lastMeasurement = data[data.length - 1];
-        setLatestMeasurement(lastMeasurement.measurement);
-        setLatestMeasurementTime(new Date(lastMeasurement.createdAt));
-
-        // Verificar si la medición es mayor a 200 (nivel de alarma)
-        if (lastMeasurement.measurement > 200) {
-          setIsAlarm(true);
-          
-          // Mostrar notificación de alarma con el valor ppm
-          toast.error(
-            `⚠️ Alarma de gas! Nivel: ${lastMeasurement.measurement} ppm`,
-            {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-            }
-          );
-          
-          // Reproducir sonido de alarma
-          if (audioRef.current) {
-            audioRef.current.play();  // Reproducir el sonido
-          }
-
-        } else {
-          setIsAlarm(false);  // No hay alarma
-        }
+        // 2. Obtener las mediciones para esos dispositivos
+        const measuresResponse = await fetch(`http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures`);
+        const measuresData = await measuresResponse.json();
+        setMeasurements(measuresData);
 
       } catch (error) {
-        console.error("Error fetching measurements:", error);
+        console.error("Error fetching devices and measurements:", error);
       }
     }
 
-    fetchLatestMeasurement();
-  }, []);
+    fetchDevicesAndMeasurements();
+  }, [userSession]);
 
-  const getGasLevelText = (measurement) => {
-    if (measurement < 50) {
-      return "Nivel de Gas Bajo";
-    } else if (measurement >= 50 && measurement < 200) {
-      return "Nivel de Gas Medio";
-    } else if (measurement >= 200 && measurement < 400) {
-      return "Nivel de Gas Alto";
-    } else {
-      return "Nivel de Gas Muy Alto";
-    }
+  const getDeviceLastMeasurement = (deviceId) => {
+    // Encuentra la última medición para este dispositivo
+    const deviceMeasurements = measurements.filter(measure => measure.deviceId === deviceId);
+    return deviceMeasurements.length > 0 ? deviceMeasurements[deviceMeasurements.length - 1] : null;
   };
 
-  const isMeasurementRecent = () => {
-    if (!latestMeasurementTime) return false;
+  const handleAlarmNotification = (measurement, createdAt) => {
     const currentTime = new Date();
-    const timeDifference = (currentTime - latestMeasurementTime) / 1000 / 60;
-    return timeDifference <= 10;
+    const measurementTime = new Date(createdAt);
+    const timeDifference = (currentTime - measurementTime) / 1000; // Diferencia en segundos
+
+    // Mostrar la notificación solo si la medición es reciente (menos de 20 segundos)
+    if (measurement > 200 && timeDifference <= 20 && lastNotifiedMeasurement !== createdAt) {
+      toast.error(
+        `⚠️ Alarma de gas! Nivel: ${measurement}ppm`,
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        }
+      );
+
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+
+      setLastNotifiedMeasurement(createdAt);
+    }
   };
 
   return (
@@ -87,16 +79,30 @@ export default function Home() {
       <Header />
       <div className="container mx-auto p-6">
         <div className="space-y-6">
-          <SensorCard
-            sensorName="DISPOSITIVO 1"
-            message="Detector de niveles peligrosos de contaminación gaseosa"
-            gasLevel={
-              latestMeasurement
-                ? `${latestMeasurement} ppm - ${getGasLevelText(latestMeasurement)}`
-                : "Cargando..."
+          {devices.map(device => {
+            const lastMeasurementData = getDeviceLastMeasurement(device.deviceId);
+            const lastMeasurement = lastMeasurementData ? lastMeasurementData.measurement : "Cargando...";
+            const lastMeasurementTime = lastMeasurementData ? new Date(lastMeasurementData.createdAt) : null;
+
+            // Notificar si es necesario
+            if (lastMeasurementData && lastMeasurement > 200) {
+              handleAlarmNotification(lastMeasurement, lastMeasurementData.createdAt);
             }
-            isActive={isMeasurementRecent()}
-          />
+
+            return (
+              <SensorCard
+                key={device.deviceId}
+                sensorName={device.name}
+                message={`Área: ${device.areaDescription}`}  // Aquí pasamos solo el área
+                gasLevel={
+                  lastMeasurementData  // Aquí pasamos la medición de gas
+                    ? `${lastMeasurement} ppm - ${getGasLevelText(lastMeasurement)}`
+                    : "Cargando..."
+                }
+                isActive={lastMeasurementTime && isMeasurementRecent(lastMeasurementTime)}
+              />
+            );
+          })}
 
           {/* Botones centrados */}
           <div className="flex justify-center space-x-4">
@@ -122,3 +128,22 @@ export default function Home() {
     </div>
   );
 }
+
+// Funciones auxiliares
+const getGasLevelText = (measurement) => {
+  if (measurement < 50) {
+    return "Nivel de Gas Bajo";
+  } else if (measurement >= 50 && measurement < 200) {
+    return "Nivel de Gas Medio";
+  } else if (measurement >= 200 && measurement < 400) {
+    return "Nivel de Gas Alto";
+  } else {
+    return "Nivel de Gas Muy Alto";
+  }
+};
+
+const isMeasurementRecent = (measurementTime) => {
+  const currentTime = new Date();
+  const timeDifference = (currentTime - measurementTime) / 1000 / 60;
+  return timeDifference <= 10;
+};

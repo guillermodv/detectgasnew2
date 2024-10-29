@@ -11,12 +11,10 @@ export default function SensorCard({
       {/* Información del sensor */}
       <div>
         <h2 className="text-lg font-semibold text-gray-700">{sensorName}</h2>
+        <p className="text-gray-500">Detector de niveles peligrosos de contaminación gaseosa</p>  {/* Texto agregado */}
         <p className="text-gray-600">{message}</p>
         {isActive && <p className="text-gray-600">Nivel de gas: {gasLevel}</p>}
-        <p className="text-gray-600">
-          Área: {sensorName === 'DISPOSITIVO 1' ? 'Fábrica 1' : 'Fábrica 2'}
-        </p>
-        
+
         {/* Link al historial del sensor */}
         <Link href="/historicoSensor" passHref>
           <button

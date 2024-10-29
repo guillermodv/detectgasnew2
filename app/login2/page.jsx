@@ -116,7 +116,7 @@ function LoginPage() {
                     className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
                     href="recovery"
                   >
-                    No recuerdas la password?
+                    ¿No recuerdas la contraseña?
                   </a>
                 </div>
                 <ErrorMessage

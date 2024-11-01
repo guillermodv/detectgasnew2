@@ -8,6 +8,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { PuffLoader } from "react-spinners";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
+import zoomPlugin from 'chartjs-plugin-zoom';
+
+ChartJS.register(zoomPlugin);
+
 
 import {
   CategoryScale,
@@ -175,6 +179,21 @@ export default function HistoricoSensor() {
                       startDate
                     ).format("LL")} hasta ${moment(endDate).format("LL")}`,
                   },
+                  zoom: {
+                    pan: {
+                      enabled: true,
+                      mode: "x", // Permite desplazamiento solo en el eje x
+                    },
+                    zoom: {
+                      wheel: {
+                        enabled: true,
+                      },
+                      pinch: {
+                        enabled: true,
+                      },
+                      mode: "x", // Permite hacer zoom solo en el eje x
+                    },
+                  },
                 },
                 scales: {
                   x: {
@@ -193,6 +212,7 @@ export default function HistoricoSensor() {
                 },
               }}
             />
+
           ) : (
             <p>No hay datos para el rango de fechas seleccionado.</p>
           )}

@@ -56,7 +56,7 @@ export default function Dashboard() {
     // Establecer un intervalo para actualizar los datos cada 20 segundos
     const intervalId = setInterval(() => {
       fetchDevicesAndMeasurements();
-    }, 20000); // 20 segundos
+    }, 2000); // 20 segundos
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
@@ -64,7 +64,7 @@ export default function Dashboard() {
 
   const getDeviceLastMeasurement = (deviceId) => {
     // Encuentra la última medición para este dispositivo
-    const deviceMeasurements = measurements.filter(
+    const deviceMeasurements = measurements?.filter(
       (measure) => measure.deviceId === deviceId
     );
     return deviceMeasurements.length > 0

@@ -17,6 +17,9 @@ function NewDevicePage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [userSession, setUserSession] = useState(null);
+  const [areas, setAreas] = useState([]); 
+  const [showAddArea, setShowAddArea] = useState(false); 
+  const [newAreaName, setNewAreaName] = useState(""); 
 
   const initialValues = {
     name: "",
@@ -25,15 +28,18 @@ function NewDevicePage() {
   };
 
   useEffect(() => {
-    // Obtener usuario desde localStorage con la clave correcta
     const storedUser = localStorage.getItem("userApp");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       setUserSession(user);
     } else {
-      // Si no hay usuario, redirigir al login
       router.push("/login2");
     }
+
+    fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/areas")
+      .then((response) => response.json())
+      .then((data) => setAreas(data))
+      .catch((error) => console.error("Error fetching areas:", error));
   }, [router]);
 
   const handleSubmit = async (values) => {
@@ -43,12 +49,12 @@ function NewDevicePage() {
     }
 
     const newDevice = {
-      idDevice: values.deviceCode, // Cambiado de deviceId a idDevice
+      idDevice: values.deviceCode,
       name: values.name,
-      idArea: 1,
-      areaDescription: values.area,
-      idUser: userSession.id, // Cambiado de userId a idUser
-      enabled: true
+      idArea: values.area,
+      areaDescription: areas.find((area) => area.id === values.area)?.description || values.area,
+      idUser: userSession.id,
+      enabled: true,
     };
 
     setLoading(true);
@@ -64,32 +70,13 @@ function NewDevicePage() {
         body: JSON.stringify(newDevice),
       });
 
-      // Primero verificamos si la respuesta es OK
       if (!response.ok) {
-        // Si la respuesta no es OK, intentamos obtener el mensaje de error
-        try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Error al registrar el dispositivo.");
-        } catch (jsonError) {
-          // Si no podemos parsear la respuesta como JSON, usamos el texto de la respuesta
-          const errorText = await response.text();
-          throw new Error(`Error al registrar el dispositivo: ${errorText}`);
-        }
-      }
-
-      // Si la respuesta es OK, intentamos parsear la respuesta
-      try {
-        const data = await response.json();
-        console.log("Dispositivo creado:", data);
-      } catch (jsonError) {
-        console.log("Respuesta exitosa pero no es JSON");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al registrar el dispositivo.");
       }
 
       setSuccess(true);
-      // Redirigir al dashboard después de un registro exitoso
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (err) {
       setError(err.message);
       console.error("Error completo:", err);
@@ -98,104 +85,113 @@ function NewDevicePage() {
     }
   };
 
+  const handleAddNewArea = async () => {
+    if (!newAreaName) return;
+    
+    try {
+      const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/area", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ description: newAreaName }),
+      });
+      if (!response.ok) throw new Error("Error al crear el área");
+
+      const areaData = await response.json();
+      setAreas((prevAreas) => [...prevAreas, areaData]);
+      setShowAddArea(false);
+      setNewAreaName("");
+    } catch (error) {
+      console.error("Error al agregar nueva área:", error);
+    }
+  };
+
   return (
     <>
       <Header />
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#61AFB6] to-[#3862A4]">
-        <div className="w-full max-w-lg mb-40">
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ errors, touched }) => (
-              <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <div className="mb-4">
-                <h1 className="text-2xl text-[#00368a] text-center font-bold mb-8">Nuevo Dispositivo</h1>
-                  <label
-                    className="block text-blue-800 text-sm font-bold mb-2"
-                    htmlFor="name"
-                  >
+        <div className="w-full max-w-lg bg-white shadow-md rounded-lg p-10">
+          <h1 className="text-2xl font-bold text-center text-[#00368a] mb-6">Nuevo Dispositivo</h1>
+          <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+            {({ errors, touched, values, setFieldValue }) => (
+              <Form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="name">
                     Nombre del dispositivo
                   </label>
                   <Field
                     name="name"
                     type="text"
                     placeholder="Nombre del dispositivo"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.name && touched.name ? "border-red-500" : ""
-                    }`}
+                    className="w-full p-2 border border-gray-300 rounded"
                   />
-                  <ErrorMessage
-                    name="name"
-                    component="p"
-                    className="text-red-500 text-xs italic"
-                  />
+                  <ErrorMessage name="name" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    className="block text-blue-800 text-sm font-bold mb-2"
-                    htmlFor="area"
-                  >
+                <div>
+                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="area">
                     Área
                   </label>
-                  <Field
-                    name="area"
-                    type="text"
-                    placeholder="Área"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.area && touched.area ? "border-red-500" : ""
-                    }`}
-                  />
-                  <ErrorMessage
-                    name="area"
-                    component="p"
-                    className="text-red-500 text-xs italic"
-                  />
+                  <Field as="select" name="area" className="w-full p-2 border border-gray-300 rounded">
+                    <option value="" label="Seleccione un área" />
+                    {areas.map((area) => (
+                      <option key={area.id} value={area.id}>
+                        {area.description}
+                      </option>
+                    ))}
+                  </Field>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddArea(!showAddArea)}
+                    className="text-blue-500 text-xs mt-2 underline"
+                  >
+                    {showAddArea ? "Cancelar" : "Agregar nueva área"}
+                  </button>
+                  {showAddArea && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        placeholder="Nombre de nueva área"
+                        value={newAreaName}
+                        onChange={(e) => setNewAreaName(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddNewArea}
+                        className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
+                      >
+                        Agregar Área
+                      </button>
+                    </div>
+                  )}
+                  <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    className="block text-blue-800 text-sm font-bold mb-2"
-                    htmlFor="deviceCode"
-                  >
+                <div>
+                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="deviceCode">
                     Código de equipo
                   </label>
                   <Field
                     name="deviceCode"
                     type="text"
                     placeholder="Código de equipo"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.deviceCode && touched.deviceCode
-                        ? "border-red-500"
-                        : ""
-                    }`}
+                    className="w-full p-2 border border-gray-300 rounded"
                   />
-                  <ErrorMessage
-                    name="deviceCode"
-                    component="p"
-                    className="text-red-500 text-xs italic"
-                  />
+                  <ErrorMessage name="deviceCode" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                {error && (
-                  <p className="text-red-500 text-xs italic mt-2">{error}</p>
-                )}
-                {success && (
-                  <p className="text-green-500 text-xs italic mt-2">
-                    ¡Dispositivo registrado con éxito!
-                  </p>
-                )}
+                {error && <p className="text-red-500 text-xs italic">{error}</p>}
+                {success && <p className="text-green-500 text-xs italic">¡Dispositivo registrado con éxito!</p>}
 
-                <div className="mt-4">
-                  <button
-                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    type="submit"
-                  >
-                    {loading ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none"
+                  disabled={loading}
+                >
+                  {loading ? "Guardando..." : "Guardar"}
+                </button>
               </Form>
             )}
           </Formik>

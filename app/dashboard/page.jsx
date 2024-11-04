@@ -22,23 +22,26 @@ export default function Dashboard() {
   const [measurements, setMeasurements] = useState([]);
   const [lastNotifiedMeasurement, setLastNotifiedMeasurement] = useState(null); // Estado para evitar notificaciones duplicadas
   const [deviceToDelete, setDeviceToDelete] = useState(null); // Estado para seleccionar el dispositivo a eliminar
+  
 
   // Referencia al elemento de audio
   const audioRef = useRef(null);
 
   const fetchDevicesAndMeasurements = async () => {
     try {
-      // 1. Obtener los dispositivos del usuario logueado
+      // Obtener los dispositivos del usuario logueado
       const devicesResponse = await fetch(
         `http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices`
       );
       const devicesData = await devicesResponse.json();
+  
+      // Filtrar dispositivos: solo mostrar los habilitados (`enabled: true`) y del usuario actual
       const userDevices = devicesData.filter(
-        (device) => device.userId === userSession.id
+        (device) => device.userId === userSession.id && device.enabled
       );
       setDevices(userDevices);
-
-      // 2. Obtener las mediciones para esos dispositivos
+  
+      // Obtener las mediciones para esos dispositivos
       const measuresResponse = await fetch(
         `http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures`
       );
@@ -48,6 +51,7 @@ export default function Dashboard() {
       console.error("Error fetching devices and measurements:", error);
     }
   };
+  
 
   useEffect(() => {
     // Cargar los datos inicialmente

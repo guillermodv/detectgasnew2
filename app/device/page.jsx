@@ -17,30 +17,40 @@ function NewDevicePage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [userSession, setUserSession] = useState(null);
-  const [areas, setAreas] = useState([]); 
-  const [showAddArea, setShowAddArea] = useState(false); 
-  const [newAreaName, setNewAreaName] = useState(""); 
+  const [areas, setAreas] = useState([]); // Lista de áreas obtenidas de la BD
+  const [newAreaDescription, setNewAreaDescription] = useState(""); // Descripción de nueva área
+  const [isAddingNewArea, setIsAddingNewArea] = useState(false); // Controla si estamos agregando una nueva área
 
   const initialValues = {
     name: "",
-    area: "",
+    area: "", // Selección de área o nueva área
     deviceCode: "",
   };
 
   useEffect(() => {
+    // Obtener usuario desde localStorage
     const storedUser = localStorage.getItem("userApp");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       setUserSession(user);
+      // Obtener áreas de la BD
+      fetchAreas(user.id);
     } else {
       router.push("/login2");
     }
-
-    fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/areas")
-      .then((response) => response.json())
-      .then((data) => setAreas(data))
-      .catch((error) => console.error("Error fetching areas:", error));
   }, [router]);
+
+  const fetchAreas = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://detectgas.brazilsouth.cloudapp.azure.com:3001/areas?userId=${userId}`
+      );
+      const data = await response.json();
+      setAreas(data); // Guardar las áreas obtenidas
+    } catch (error) {
+      console.error("Error al obtener áreas:", error);
+    }
+  };
 
   const handleSubmit = async (values) => {
     if (!userSession) {
@@ -48,14 +58,38 @@ function NewDevicePage() {
       return;
     }
 
+    let selectedAreaId = values.area;
+    if (isAddingNewArea) {
+      try {
+        const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/area", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userSession.id,
+            description: newAreaDescription,
+            maxAlert: 200,
+          }),
+        });
+        const newArea = await response.json();
+        selectedAreaId = newArea.id; // Usar el ID de la nueva área
+      } catch (err) {
+        setError("Error al crear el área.");
+        console.error("Error completo:", err);
+        return;
+      }
+    }
+    
+
     const newDevice = {
       idDevice: values.deviceCode,
       name: values.name,
-      idArea: values.area,
-      areaDescription: areas.find((area) => area.id === values.area)?.description || values.area,
+      idArea: selectedAreaId, // Aquí debe pasar el ID de área correcto
+      areaDescription: isAddingNewArea ? newAreaDescription : areas.find(a => a.id === selectedAreaId).description,
       idUser: userSession.id,
       enabled: true,
-    };
+    };    
 
     setLoading(true);
     setError(null);
@@ -76,7 +110,9 @@ function NewDevicePage() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.push("/dashboard"), 2000);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
     } catch (err) {
       setError(err.message);
       console.error("Error completo:", err);
@@ -85,113 +121,101 @@ function NewDevicePage() {
     }
   };
 
-  const handleAddNewArea = async () => {
-    if (!newAreaName) return;
-    
-    try {
-      const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/area", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ description: newAreaName }),
-      });
-      if (!response.ok) throw new Error("Error al crear el área");
-
-      const areaData = await response.json();
-      setAreas((prevAreas) => [...prevAreas, areaData]);
-      setShowAddArea(false);
-      setNewAreaName("");
-    } catch (error) {
-      console.error("Error al agregar nueva área:", error);
-    }
-  };
-
   return (
     <>
       <Header />
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#61AFB6] to-[#3862A4]">
-        <div className="w-full max-w-lg bg-white shadow-md rounded-lg p-10">
-          <h1 className="text-2xl font-bold text-center text-[#00368a] mb-6">Nuevo Dispositivo</h1>
-          <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+        <div className="w-full max-w-lg mb-40">
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
             {({ errors, touched, values, setFieldValue }) => (
-              <Form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="name">
+              <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h1 className="text-2xl text-[#00368a] text-center font-bold mb-8">Nuevo Dispositivo</h1>
+                <div className="mb-4">
+                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="name">
                     Nombre del dispositivo
                   </label>
                   <Field
                     name="name"
                     type="text"
                     placeholder="Nombre del dispositivo"
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
+                      errors.name && touched.name ? "border-red-500" : ""
+                    }`}
                   />
                   <ErrorMessage name="name" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="area">
+                <div className="mb-4">
+                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="area">
                     Área
                   </label>
-                  <Field as="select" name="area" className="w-full p-2 border border-gray-300 rounded">
-                    <option value="" label="Seleccione un área" />
+                  <Field
+                    as="select"
+                    name="area"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setIsAddingNewArea(value === "new");
+                      setFieldValue("area", value);
+                    }}
+                  >
+                    <option value="">Seleccione un área</option>
                     {areas.map((area) => (
                       <option key={area.id} value={area.id}>
                         {area.description}
                       </option>
                     ))}
+                    <option value="new">Agregar nueva área</option>
                   </Field>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddArea(!showAddArea)}
-                    className="text-blue-500 text-xs mt-2 underline"
-                  >
-                    {showAddArea ? "Cancelar" : "Agregar nueva área"}
-                  </button>
-                  {showAddArea && (
-                    <div className="mt-2">
-                      <input
-                        type="text"
-                        placeholder="Nombre de nueva área"
-                        value={newAreaName}
-                        onChange={(e) => setNewAreaName(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddNewArea}
-                        className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                      >
-                        Agregar Área
-                      </button>
-                    </div>
-                  )}
                   <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold mb-1 text-gray-600" htmlFor="deviceCode">
+                {isAddingNewArea && (
+                  <div className="mb-4">
+                    <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="newAreaDescription">
+                      Nueva descripción del área
+                    </label>
+                    <input
+                      type="text"
+                      id="newAreaDescription"
+                      placeholder="Descripción del área"
+                      value={newAreaDescription}
+                      onChange={(e) => setNewAreaDescription(e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="deviceCode">
                     Código de equipo
                   </label>
                   <Field
                     name="deviceCode"
                     type="text"
                     placeholder="Código de equipo"
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
+                      errors.deviceCode && touched.deviceCode ? "border-red-500" : ""
+                    }`}
                   />
                   <ErrorMessage name="deviceCode" component="p" className="text-red-500 text-xs italic" />
                 </div>
 
-                {error && <p className="text-red-500 text-xs italic">{error}</p>}
-                {success && <p className="text-green-500 text-xs italic">¡Dispositivo registrado con éxito!</p>}
+                {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
+                {success && <p className="text-green-500 text-xs italic mt-2">¡Dispositivo registrado con éxito!</p>}
 
-                <button
-                  type="submit"
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none"
-                  disabled={loading}
-                >
-                  {loading ? "Guardando..." : "Guardar"}
-                </button>
+                <div className="mt-4">
+                  <button
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit"
+                  >
+                    {loading ? "Guardando..." : "Guardar"}
+                  </button>
+                </div>
               </Form>
             )}
           </Formik>

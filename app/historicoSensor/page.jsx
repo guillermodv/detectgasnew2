@@ -122,7 +122,7 @@ export default function HistoricoSensor() {
   return (
     <div className="bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen">
       <Header />
-      <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-6">
         <div className="flex justify-between">
           <h1 className="text-xl font-bold">Dispositivo {deviceId}</h1>
           <button
@@ -133,7 +133,6 @@ export default function HistoricoSensor() {
           </button>
         </div>
 
-        <p>Tipo de gas: Monóxido de carbono</p>
         <p>Área: Fábrica 1</p>
 
         <div className="my-4 flex gap-4">
@@ -220,7 +219,13 @@ export default function HistoricoSensor() {
 
         <div className="flex justify-between items-center mt-8">
           <div className="flex items-center">
-            <span className="mr-2">🔔</span>
+            <span className="mr-2">
+              <img
+                src="/alerta.png"
+                alt="Alerta"
+                className="w-7 h-7 mb-1"
+              />
+            </span>
             {alarmas.length > 0 ? (
               <p>Última alarma activada a las {alarmas[alarmas.length - 1]?.hora}</p>
             ) : (

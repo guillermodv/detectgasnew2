@@ -182,13 +182,19 @@ export default function Dashboard() {
                     lastMeasurementTime && isMeasurementRecent(lastMeasurementTime)
                   }
                 />
-                {/* Botón de eliminación con icono de tacho de basura */}
+                {/* Botón de eliminación con icono personalizado */}
                 <button
                   onClick={() => confirmDelete(device)}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                  className="absolute top-2 right-2 text-red-500"
                 >
-                  🗑️
+                  <img
+                    src="/eliminar.png"
+                    alt="Eliminar"
+                    className="w-7 h-7 hover:opacity-65 transition duration-200 ease-in-out"
+                  />
                 </button>
+
+
               </div>
             );
           })}

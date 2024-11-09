@@ -50,10 +50,14 @@ function RecoveryPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-300">
-      <div className="w-full max-w-xs">
+    <div
+      className="flex items-center justify-center min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: 'url("/fondo.jpg")' }}
+    >
+      {/* Aquí se mantiene solo un recuadro con los estilos del login */}
+      <div className="w-full max-w-xs bg-white bg-opacity-80 p-6 rounded shadow-md">
         <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold mb-8">Recuperar Contraseña</h1>
+          <h1 className="text-xl text-[#00368a] font-bold">Recuperar Contraseña</h1>
         </div>
         <Formik
           initialValues={initialValues}
@@ -61,7 +65,7 @@ function RecoveryPasswordPage() {
           onSubmit={handleSubmit}
         >
           {({ errors, touched }) => (
-            <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <Form className="shadow-md rounded px-8 pt-6 pb-8 mb-4">
               <div className="mb-4">
                 <label
                   className="block text-blue-800 text-sm font-bold mb-2"
@@ -86,7 +90,7 @@ function RecoveryPasswordPage() {
 
               <div className="mt-4">
                 <button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xm font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   type="submit"
                 >
                   {loading ? 'Enviando...' : 'Recuperar Contraseña'}
@@ -96,12 +100,12 @@ function RecoveryPasswordPage() {
               {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
               {success && <p className="text-green-500 text-xs italic mt-2">¡Correo enviado para recuperación!</p>}
 
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center justify-center mt-4 w-full">
                 <a
                   className="inline-block align-baseline font-bold text-sm text-blue-400 hover:text-blue-700"
-                  href="login"
+                  href="login2"
                 >
-                  Inicia sesión
+                  Iniciar sesión
                 </a>
               </div>
             </Form>

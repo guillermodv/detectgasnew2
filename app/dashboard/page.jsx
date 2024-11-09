@@ -147,15 +147,12 @@ export default function Dashboard() {
             <div className="flex flex-col items-center">
               <div className="w-[700px] relative">
                 <img
-                  src="/robot TRISTE.PNG"
+                  src="/robot TRISTE4.PNG"
                   alt="No hay dispositivos"
                   className="mt-6 object-contain w-full"
                   priority
                 />
               </div>
-              <p className="text-white text-center mt-4 text-2xl font-semibold">
-                No hay dispositivos conectados
-              </p>
             </div>
           ) : (
             devices.map((device) => {

@@ -125,7 +125,7 @@ function NewDevicePage() {
     <>
       <Header />
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#61AFB6] to-[#3862A4]">
-        <div className="w-full max-w-lg mb-40">
+        <div className="w-full max-w-lg mt-[-40vh]">
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}

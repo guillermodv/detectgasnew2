@@ -17,9 +17,11 @@ export default function UserProfile() {
         const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices");
         const devices = await response.json();
 
-        // Filtrar dispositivos que pertenecen al usuario actual
-        const userDevices = devices.filter(device => device.userId === userSession.id);
-        setUserDevices(userDevices);
+        // Filtrar dispositivos que pertenecen al usuario actual y que están habilitados (activos)
+        const activeUserDevices = devices.filter(
+          device => device.userId === userSession.id && device.enabled
+        );
+        setUserDevices(activeUserDevices);
       } catch (error) {
         console.error("Error fetching devices:", error);
       }
@@ -36,7 +38,7 @@ export default function UserProfile() {
     <div>
       <Header />
       <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen">
-        <div className="mb-40 bg-[#c3e5e7] rounded-lg p-8 w-full max-w-lg shadow-lg">
+        <div className="bg-[#c3e5e7] rounded-lg p-8 w-full max-w-lg shadow-lg mt-[-40vh]">
           <div className="flex flex-col items-center mb-5">
             <div>
               <Image
@@ -62,7 +64,7 @@ export default function UserProfile() {
             </div>
             <div className="flex items-center text-lg">
               <span className="font-semibold mr-1">Dispositivos conectados:</span>
-              <span>{userDevices.length}</span> {/* Mostrar el número de dispositivos */}
+              <span>{userDevices.length}</span> {/* Mostrar el número de dispositivos activos */}
             </div>
           </div>
         </div>

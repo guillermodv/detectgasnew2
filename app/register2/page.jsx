@@ -2,6 +2,7 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
+import Image from "next/image";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("The username is required"),
@@ -66,9 +67,7 @@ function RegisterPage() {
       style={{ backgroundImage: 'url("/fondo.jpg")' }}
     >
       <div className="w-full max-w-xs">
-        <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-bold text-blue-50 mb-8">DetectGAS</h1>
-        </div>
+
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -76,6 +75,15 @@ function RegisterPage() {
         >
           {({ errors, touched }) => (
             <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div className="flex flex-col items-center gap-2 mb-4 ">
+              <Image
+                src="/Logo_Completo.PNG"
+                alt="Login Image"
+                width={165}
+                height={165}
+                priority
+              />
+            </div>
               <div className="mb-4">
                 <label
                   className="block text-blue-800 text-sm font-bold mb-2"

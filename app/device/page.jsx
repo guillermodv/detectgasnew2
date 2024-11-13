@@ -21,10 +21,12 @@ function NewDevicePage() {
   const [newAreaDescription, setNewAreaDescription] = useState(""); // Descripción de nueva área
   const [isAddingNewArea, setIsAddingNewArea] = useState(false); // Controla si estamos agregando una nueva área
 
+
   const initialValues = {
     name: "",
     area: "", // Selección de área o nueva área
     deviceCode: "",
+    maxAlert: "",
   };
 
   useEffect(() => {
@@ -69,11 +71,11 @@ function NewDevicePage() {
           body: JSON.stringify({
             userId: userSession.id,
             description: newAreaDescription,
-            maxAlert: 200,
+            maxAlert: values.maxAlert, // Usamos directamente el valor de maxAlert ingresado en el formulario
           }),
         });
         const newArea = await response.json();
-        selectedAreaId = newArea.id; // Usar el ID de la nueva área
+        selectedAreaId = newArea.id;
       } catch (err) {
         setError("Error al crear el área.");
         console.error("Error completo:", err);
@@ -81,15 +83,19 @@ function NewDevicePage() {
       }
     }
     
+    
 
     const newDevice = {
       idDevice: values.deviceCode,
       name: values.name,
-      idArea: selectedAreaId, // Aquí debe pasar el ID de área correcto
-      areaDescription: isAddingNewArea ? newAreaDescription : areas.find(a => a.id === selectedAreaId).description,
+      idArea: selectedAreaId,
+      areaDescription: isAddingNewArea
+        ? newAreaDescription
+        : areas.find((a) => a.id === selectedAreaId).description,
       idUser: userSession.id,
       enabled: true,
-    };    
+      maxAlert: values.maxAlert, // Guardamos el umbral del dispositivo
+    }; 
 
     setLoading(true);
     setError(null);
@@ -187,6 +193,21 @@ function NewDevicePage() {
                       onChange={(e) => setNewAreaDescription(e.target.value)}
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
                     />
+                  </div>
+                )}
+
+                {isAddingNewArea && (
+                  <div className="mb-4">
+                    <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="maxAlert">
+                      Umbral de alerta (ppm)
+                    </label>
+                    <Field
+                      name="maxAlert"
+                      type="number"
+                      placeholder="Umbral de alerta"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    <ErrorMessage name="maxAlert" component="p" className="text-red-500 text-xs italic" />
                   </div>
                 )}
 

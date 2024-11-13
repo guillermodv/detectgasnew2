@@ -39,6 +39,23 @@ export default function Dashboard() {
       );
       setDevices(userDevices);
 
+      // Fetch de áreas para obtener maxAlert
+      const areasResponse = await fetch(
+        `http://detectgas.brazilsouth.cloudapp.azure.com:3001/areas`
+      );
+      const areasData = await areasResponse.json();
+
+      // Asignar maxAlert de cada área al dispositivo correspondiente
+      const devicesWithAlert = userDevices.map((device) => {
+        const area = areasData.find((area) => area.id === device.idArea);
+        return {
+          ...device,
+          maxAlert: area ? area.maxAlert : null, // Asigna el maxAlert del área o null si no se encuentra
+        };
+      });
+
+      setDevices(devicesWithAlert);
+
       const measuresResponse = await fetch(
         `http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures`
       );
@@ -73,33 +90,35 @@ export default function Dashboard() {
       : null;
   };
 
-  const handleAlarmNotification = (measurement, createdAt) => {
-    const currentTime = new Date();
-    const measurementTime = new Date(createdAt);
-    const timeDifference = (currentTime - measurementTime) / 1000;
+const handleAlarmNotification = (measurement, createdAt, maxAlert, deviceId) => {
+  const currentTime = new Date();
+  const measurementTime = new Date(createdAt);
+  const timeDifference = (currentTime - measurementTime) / 1000;
 
-    if (
-      measurement > 200 &&
-      timeDifference <= 20 &&
-      lastNotifiedMeasurement !== createdAt
-    ) {
-      toast.error(`⚠️ Alarma de gas! Nivel: ${measurement}ppm`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+  if (
+    measurement > maxAlert &&
+    timeDifference <= 20 &&
+    (!lastNotifiedMeasurement || lastNotifiedMeasurement.createdAt !== createdAt)
+  ) {
+    toast.error(`⚠️ Alarma de gas! Nivel: ${measurement}ppm`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
 
-      if (audioRef.current) {
-        audioRef.current.play();
-      }
-
-      setLastNotifiedMeasurement(createdAt);
+    if (audioRef.current) {
+      audioRef.current.play();
     }
-  };
+
+    setLastNotifiedMeasurement({ createdAt, deviceId });
+  }
+};
+
+
 
   const handleDeleteDevice = async (deviceId) => {
     try {
@@ -156,21 +175,22 @@ export default function Dashboard() {
             </div>
           ) : (
             devices.map((device) => {
-              const lastMeasurementData = getDeviceLastMeasurement(
-                device.deviceId
-              );
+              const lastMeasurementData = getDeviceLastMeasurement(device.deviceId);
               const lastMeasurement = lastMeasurementData
                 ? lastMeasurementData.measurement
                 : "Cargando...";
               const lastMeasurementTime = lastMeasurementData
                 ? new Date(lastMeasurementData.createdAt)
                 : null;
+            
 
-              if (lastMeasurementData && lastMeasurement > 200) {
-                handleAlarmNotification(
-                  lastMeasurement,
-                  lastMeasurementData.createdAt
-                );
+                if (lastMeasurementData && lastMeasurement > device.maxAlert) { // Compara con el umbral del dispositivo
+                  handleAlarmNotification(
+                    lastMeasurement,
+                    lastMeasurementData.createdAt,
+                    device.maxAlert,
+                    device.deviceId
+                  );
               }
 
               return (

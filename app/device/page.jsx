@@ -168,13 +168,13 @@ function NewDevicePage() {
                           setFieldValue("area", value);
                         }}
                       >
-                        <option value="">Seleccione un área</option>
+                        <option value="" className="hidden">Seleccione un área</option>
                         {areas.map((area) => (
                           <option key={area.id} value={area.id}>
                             {area.description}
                           </option>
                         ))}
-                        <option value="new">Agregar nueva área</option>
+                        <option value="new" className="font-bold">Agregar nueva área</option>
                       </Field>
                       <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
                     </div>

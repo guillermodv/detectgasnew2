@@ -75,7 +75,7 @@ export default function Dashboard() {
     // Establecer un intervalo para actualizar los datos cada 20 segundos
     const intervalId = setInterval(() => {
       fetchDevicesAndMeasurements(false); // No mostrar el estado de carga para las actualizaciones
-    }, 20000); // 20 segundos
+    }, 2000); // 2 segundos
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);

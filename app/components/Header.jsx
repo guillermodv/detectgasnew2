@@ -60,7 +60,7 @@ export default function Header() {
       </nav>
 
       <div className="flex items-center rounded-md">
-        <span className="mr-2 mt-0.5 font-bold">
+        <span className="mr-2 mt-0.5 font-bold text-[#00368a]">
           {userSession ? userSession.name : "Usuario"}
         </span>{" "}
         {/* Mostrar nombre del usuario */}

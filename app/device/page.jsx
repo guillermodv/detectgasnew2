@@ -58,7 +58,7 @@ function NewDevicePage() {
       setError("Usuario no autenticado.");
       return;
     }
-
+  
     let selectedAreaId = values.area;
     if (isAddingNewArea) {
       try {
@@ -81,23 +81,29 @@ function NewDevicePage() {
         return;
       }
     }
-
+  
+    // Verificación adicional para asegurarnos de que el ID del área esté presente
+    if (!selectedAreaId) {
+      setError("Seleccione un área válida.");
+      return;
+    }
+  
     const newDevice = {
       idDevice: values.deviceCode,
       name: values.name,
       idArea: selectedAreaId,
       areaDescription: isAddingNewArea
         ? newAreaDescription
-        : areas.find((a) => a.id === selectedAreaId).description,
+        : areas.find((a) => a.id === Number(selectedAreaId)).description, // Convertir selectedAreaId a número si es string
       idUser: userSession.id,
       enabled: true,
-      maxAlert: values.maxAlert, // Guardamos el umbral del dispositivo
+      maxAlert: values.maxAlert,
     };
-
+  
     setLoading(true);
     setError(null);
     setSuccess(false);
-
+  
     try {
       const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/device", {
         method: "POST",
@@ -106,12 +112,12 @@ function NewDevicePage() {
         },
         body: JSON.stringify(newDevice),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error al registrar el dispositivo.");
       }
-
+  
       setSuccess(true);
       setTimeout(() => {
         router.push("/dashboard");
@@ -123,6 +129,7 @@ function NewDevicePage() {
       setLoading(false);
     }
   };
+  
 
   return (
     <>
@@ -166,6 +173,7 @@ function NewDevicePage() {
                           const value = e.target.value;
                           setIsAddingNewArea(value === "new");
                           setFieldValue("area", value);
+                          console.log("Selected area ID:", value); // <-- Añadir para verificar valor seleccionado
                         }}
                       >
                         <option value="" className="hidden">Seleccione un área</option>
@@ -176,6 +184,7 @@ function NewDevicePage() {
                         ))}
                         <option value="new" className="font-bold">Agregar nueva área</option>
                       </Field>
+
                       <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
                     </div>
 

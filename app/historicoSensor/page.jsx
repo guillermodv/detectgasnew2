@@ -12,7 +12,6 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 
 ChartJS.register(zoomPlugin);
 
-
 import {
   CategoryScale,
   LinearScale,
@@ -49,7 +48,6 @@ export default function HistoricoSensor() {
   useEffect(() => {
     if (!deviceId) return; // Espera hasta que deviceId esté disponible
 
-    setLoading(true);
     const fetchRealData = async () => {
       try {
         const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures");
@@ -69,23 +67,45 @@ export default function HistoricoSensor() {
             parseFloat(item.measurement)
           );
 
-          const chartData = {
-            labels: labels,
-            datasets: [
-              {
-                label: "Nivel de gas",
-                data: measurements,
-                borderColor: "rgba(75, 192, 192, 1)",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                fill: true,
-                pointBorderColor: "rgba(255, 99, 132, 1)",
-                pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
-                pointRadius: 5,
-              },
-            ],
-          };
+          // Agregar los nuevos datos sin repetir los anteriores
+          setChartData((prevData) => {
+            if (prevData) {
+              const newLabels = labels.filter((label) => !prevData.labels.includes(label));
+              const newMeasurements = measurements.filter((_, index) => !prevData.labels.includes(labels[index]));
 
-          setChartData(chartData);
+              return {
+                labels: [...prevData.labels, ...newLabels],
+                datasets: [
+                  {
+                    label: "Nivel de gas",
+                    data: [...prevData.datasets[0].data, ...newMeasurements],
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    fill: true,
+                    pointBorderColor: "rgba(255, 99, 132, 1)",
+                    pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
+                    pointRadius: 5,
+                  },
+                ],
+              };
+            } else {
+              return {
+                labels,
+                datasets: [
+                  {
+                    label: "Nivel de gas",
+                    data: measurements,
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    fill: true,
+                    pointBorderColor: "rgba(255, 99, 132, 1)",
+                    pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
+                    pointRadius: 5,
+                  },
+                ],
+              };
+            }
+          });
 
           const alarmasFiltradas = filteredData
             .filter((item) => item.measurement > 200)
@@ -109,7 +129,13 @@ export default function HistoricoSensor() {
     };
 
     fetchRealData();
-  }, [deviceId, startDate, endDate]); // Agrega deviceId como dependencia
+
+    // Establecer intervalo para refrescar cada 10 segundos
+    const intervalId = setInterval(fetchRealData, 10000);
+
+    // Limpiar intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
+  }, [deviceId, startDate, endDate]); // Reejecutar cuando cambian los filtros
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -211,7 +237,6 @@ export default function HistoricoSensor() {
                 },
               }}
             />
-
           ) : (
             <p>No hay datos para el rango de fechas seleccionado.</p>
           )}

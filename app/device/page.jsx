@@ -21,7 +21,6 @@ function NewDevicePage() {
   const [newAreaDescription, setNewAreaDescription] = useState(""); // Descripción de nueva área
   const [isAddingNewArea, setIsAddingNewArea] = useState(false); // Controla si estamos agregando una nueva área
 
-
   const initialValues = {
     name: "",
     area: "", // Selección de área o nueva área
@@ -82,8 +81,6 @@ function NewDevicePage() {
         return;
       }
     }
-    
-    
 
     const newDevice = {
       idDevice: values.deviceCode,
@@ -95,7 +92,7 @@ function NewDevicePage() {
       idUser: userSession.id,
       enabled: true,
       maxAlert: values.maxAlert, // Guardamos el umbral del dispositivo
-    }; 
+    };
 
     setLoading(true);
     setError(null);
@@ -130,116 +127,120 @@ function NewDevicePage() {
   return (
     <>
       <Header />
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#61AFB6] to-[#3862A4]">
-        <div className="w-full max-w-lg mt-[-40vh]">
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ errors, touched, values, setFieldValue }) => (
-              <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <h1 className="text-2xl text-[#00368a] text-center font-bold mb-8">Nuevo Dispositivo</h1>
-                <div className="mb-4">
-                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="name">
-                    Nombre del dispositivo
-                  </label>
-                  <Field
-                    name="name"
-                    type="text"
-                    placeholder="Nombre del dispositivo"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.name && touched.name ? "border-red-500" : ""
-                    }`}
-                  />
-                  <ErrorMessage name="name" component="p" className="text-red-500 text-xs italic" />
-                </div>
+      <div className="bg-gradient-to-b from-[#61AFB6] to-[#3862A4] min-h-screen pt-14">
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center">
+            <div className="w-full max-w-lg">
+              <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleSubmit}
+              >
+                {({ errors, touched, values, setFieldValue }) => (
+                  <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                    <h1 className="text-2xl text-[#00368a] text-center font-bold mb-8">Nuevo Dispositivo</h1>
+                    <div className="mb-4">
+                      <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="name">
+                        Nombre del dispositivo
+                      </label>
+                      <Field
+                        name="name"
+                        type="text"
+                        placeholder="Nombre del dispositivo"
+                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
+                          errors.name && touched.name ? "border-red-500" : ""
+                        }`}
+                      />
+                      <ErrorMessage name="name" component="p" className="text-red-500 text-xs italic" />
+                    </div>
 
-                <div className="mb-4">
-                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="area">
-                    Área
-                  </label>
-                  <Field
-                    as="select"
-                    name="area"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setIsAddingNewArea(value === "new");
-                      setFieldValue("area", value);
-                    }}
-                  >
-                    <option value="">Seleccione un área</option>
-                    {areas.map((area) => (
-                      <option key={area.id} value={area.id}>
-                        {area.description}
-                      </option>
-                    ))}
-                    <option value="new">Agregar nueva área</option>
-                  </Field>
-                  <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
-                </div>
+                    <div className="mb-4">
+                      <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="area">
+                        Área
+                      </label>
+                      <Field
+                        as="select"
+                        name="area"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setIsAddingNewArea(value === "new");
+                          setFieldValue("area", value);
+                        }}
+                      >
+                        <option value="">Seleccione un área</option>
+                        {areas.map((area) => (
+                          <option key={area.id} value={area.id}>
+                            {area.description}
+                          </option>
+                        ))}
+                        <option value="new">Agregar nueva área</option>
+                      </Field>
+                      <ErrorMessage name="area" component="p" className="text-red-500 text-xs italic" />
+                    </div>
 
-                {isAddingNewArea && (
-                  <div className="mb-4">
-                    <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="newAreaDescription">
-                      Nueva descripción del área
-                    </label>
-                    <input
-                      type="text"
-                      id="newAreaDescription"
-                      placeholder="Descripción del área"
-                      value={newAreaDescription}
-                      onChange={(e) => setNewAreaDescription(e.target.value)}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                  </div>
+                    {isAddingNewArea && (
+                      <>
+                        <div className="mb-4">
+                          <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="newAreaDescription">
+                            Nueva descripción del área
+                          </label>
+                          <input
+                            type="text"
+                            id="newAreaDescription"
+                            placeholder="Descripción del área"
+                            value={newAreaDescription}
+                            onChange={(e) => setNewAreaDescription(e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                          />
+                        </div>
+
+                        <div className="mb-4">
+                          <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="maxAlert">
+                            Umbral de alerta (ppm)
+                          </label>
+                          <Field
+                            name="maxAlert"
+                            type="number"
+                            placeholder="Umbral de alerta"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
+                          />
+                          <ErrorMessage name="maxAlert" component="p" className="text-red-500 text-xs italic" />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="mb-4">
+                      <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="deviceCode">
+                        Código de equipo
+                      </label>
+                      <Field
+                        name="deviceCode"
+                        type="text"
+                        placeholder="Código de equipo"
+                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
+                          errors.deviceCode && touched.deviceCode ? "border-red-500" : ""
+                        }`}
+                      />
+                      <ErrorMessage name="deviceCode" component="p" className="text-red-500 text-xs italic" />
+                    </div>
+
+                    {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
+                    {success && <p className="text-green-500 text-xs italic mt-2">¡Dispositivo registrado con éxito!</p>}
+
+                    <div className="mt-4">
+                      <button
+                        className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit"
+                      >
+                        {loading ? "Guardando..." : "Guardar"}
+                      </button>
+                    </div>
+                  </Form>
                 )}
-
-                {isAddingNewArea && (
-                  <div className="mb-4">
-                    <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="maxAlert">
-                      Umbral de alerta (ppm)
-                    </label>
-                    <Field
-                      name="maxAlert"
-                      type="number"
-                      placeholder="Umbral de alerta"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    <ErrorMessage name="maxAlert" component="p" className="text-red-500 text-xs italic" />
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <label className="block text-blue-800 text-sm font-bold mb-2" htmlFor="deviceCode">
-                    Código de equipo
-                  </label>
-                  <Field
-                    name="deviceCode"
-                    type="text"
-                    placeholder="Código de equipo"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-blue-800 leading-tight focus:outline-none focus:shadow-outline ${
-                      errors.deviceCode && touched.deviceCode ? "border-red-500" : ""
-                    }`}
-                  />
-                  <ErrorMessage name="deviceCode" component="p" className="text-red-500 text-xs italic" />
-                </div>
-
-                {error && <p className="text-red-500 text-xs italic mt-2">{error}</p>}
-                {success && <p className="text-green-500 text-xs italic mt-2">¡Dispositivo registrado con éxito!</p>}
-
-                <div className="mt-4">
-                  <button
-                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    type="submit"
-                  >
-                    {loading ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+              </Formik>
+            </div>
+          </div>
         </div>
       </div>
     </>

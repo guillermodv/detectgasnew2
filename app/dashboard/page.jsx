@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [lastNotifiedMeasurement, setLastNotifiedMeasurement] = useState(null);
   const [deviceToDelete, setDeviceToDelete] = useState(null); // Estado para seleccionar el dispositivo a eliminar
   const [isLoading, setIsLoading] = useState(true); // Estado para manejar el estado de carga inicial
+  const [audioIntervalId, setAudioIntervalId] = useState(null); // Estado para manejar el intervalo de audio
 
   // Referencia al elemento de audio
   const audioRef = useRef(null);

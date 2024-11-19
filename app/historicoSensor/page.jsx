@@ -39,87 +39,105 @@ export default function HistoricoSensor() {
   const deviceId = searchParams.get("deviceId"); // Obtén el deviceId desde la URL
 
   const [chartData, setChartData] = useState(null);
+  const [deviceInfo, setDeviceInfo] = useState(null); // Estado para nombres dinámicos
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [alarmas, setAlarmas] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Obtener nombres dinámicos del dispositivo y área
   useEffect(() => {
-    if (!deviceId) return; // Espera hasta que deviceId esté disponible
+    if (!deviceId) return;
 
+    const fetchDeviceInfo = async () => {
+      try {
+        const [deviceResponse, areasResponse] = await Promise.all([
+          fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/devices"),
+          fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/areas"),
+        ]);
+
+        const devices = await deviceResponse.json();
+        const areas = await areasResponse.json();
+
+        // Encontrar dispositivo y área correspondiente
+        const device = devices.find((d) => d.deviceId === parseInt(deviceId));
+        const area = areas.find((a) => a.id === device?.idArea);
+
+        setDeviceInfo({
+          name: device?.name || `Dispositivo ${deviceId}`,
+          areaDescription: area?.description || "Área desconocida",
+        });
+      } catch (error) {
+        console.error("Error al obtener nombres dinámicos:", error);
+        setDeviceInfo({
+          name: `Dispositivo ${deviceId}`,
+          areaDescription: "Área desconocida",
+        });
+      }
+    };
+
+    fetchDeviceInfo();
+  }, [deviceId]);
+
+  useEffect(() => {
+    if (!deviceId) return;
+  
+    let prevData = null; // Estado local para rastrear datos previos
     const fetchRealData = async () => {
       try {
+        setLoading(true);
         const response = await fetch("http://detectgas.brazilsouth.cloudapp.azure.com:3001/measures");
         const data = await response.json();
-
-        // Filtrar los datos por deviceId y rango de fechas seleccionado
+  
         const filteredData = data.filter((item) => {
           const itemDate = moment(item.createdAt);
           return item.deviceId === parseInt(deviceId) && itemDate.isBetween(startDate, endDate, "day", "[]");
         });
-
-        if (filteredData.length > 0) {
-          const labels = filteredData.map((item) =>
-            moment(item.createdAt).format("DD/MM/YYYY HH:mm")
-          );
-          const measurements = filteredData.map((item) =>
-            parseFloat(item.measurement)
-          );
-
-          // Agregar los nuevos datos sin repetir los anteriores
-          setChartData((prevData) => {
-            if (prevData) {
-              const newLabels = labels.filter((label) => !prevData.labels.includes(label));
-              const newMeasurements = measurements.filter((_, index) => !prevData.labels.includes(labels[index]));
-
-              return {
-                labels: [...prevData.labels, ...newLabels],
-                datasets: [
-                  {
-                    label: "Nivel de gas",
-                    data: [...prevData.datasets[0].data, ...newMeasurements],
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    fill: true,
-                    pointBorderColor: "rgba(255, 99, 132, 1)",
-                    pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
-                    pointRadius: 5,
-                  },
-                ],
-              };
-            } else {
-              return {
-                labels,
-                datasets: [
-                  {
-                    label: "Nivel de gas",
-                    data: measurements,
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    fill: true,
-                    pointBorderColor: "rgba(255, 99, 132, 1)",
-                    pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
-                    pointRadius: 5,
-                  },
-                ],
-              };
-            }
-          });
-
-          const alarmasFiltradas = filteredData
-            .filter((item) => item.measurement > 200)
-            .map((item, index) => ({
-              id: index + 1,
-              fecha: moment(item.createdAt).format("YYYY-MM-DD"),
-              hora: moment(item.createdAt).format("HH:mm"),
-              nivelGas: item.measurement,
-            }));
-
-          setAlarmas(alarmasFiltradas);
-        } else {
-          setChartData(null);
-          setAlarmas([]);
+  
+        if (
+          JSON.stringify(filteredData) !== JSON.stringify(prevData) // Comparar con datos previos
+        ) {
+          prevData = filteredData; // Actualizamos solo si los datos son diferentes
+  
+          if (filteredData.length > 0) {
+            const labels = filteredData.map((item) =>
+              moment(item.createdAt).format("DD/MM/YYYY HH:mm")
+            );
+            const measurements = filteredData.map((item) =>
+              parseFloat(item.measurement)
+            );
+  
+            setChartData({
+              labels,
+              datasets: [
+                {
+                  label: "Nivel de gas",
+                  data: measurements,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  fill: true,
+                  pointBorderColor: "rgba(255, 99, 132, 1)",
+                  pointBackgroundColor: "rgba(255, 99, 132, 0.2)",
+                  pointRadius: 5,
+                },
+              ],
+            });
+  
+            const alarmasFiltradas = filteredData
+              .filter((item) => item.measurement > 200)
+              .map((item, index) => ({
+                id: index + 1,
+                fecha: moment(item.createdAt).format("YYYY-MM-DD"),
+                hora: moment(item.createdAt).format("HH:mm"),
+                nivelGas: item.measurement,
+              }));
+  
+            setAlarmas(alarmasFiltradas);
+          } else {
+            setChartData(null);
+            setAlarmas([]);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -127,15 +145,15 @@ export default function HistoricoSensor() {
         setLoading(false);
       }
     };
-
+  
     fetchRealData();
-
-    // Establecer intervalo para refrescar cada 10 segundos
-    const intervalId = setInterval(fetchRealData, 10000);
-
-    // Limpiar intervalo al desmontar el componente
+  
+    // Intervalo de 10 segundos
+    const intervalId = setInterval(fetchRealData, 20000);
+  
     return () => clearInterval(intervalId);
-  }, [deviceId, startDate, endDate]); // Reejecutar cuando cambian los filtros
+  }, [deviceId, startDate, endDate]);
+  
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -150,7 +168,7 @@ export default function HistoricoSensor() {
       <Header />
       <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg mt-6">
         <div className="flex justify-between">
-          <h1 className="text-xl font-bold">Dispositivo {deviceId}</h1>
+          <h1 className="text-xl font-bold">{deviceInfo?.name || `Dispositivo ${deviceId}`}</h1>
           <button
             onClick={() => window.history.back()}
             className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
@@ -159,7 +177,7 @@ export default function HistoricoSensor() {
           </button>
         </div>
 
-        <p>Área: Fábrica 1</p>
+        <p>Área: {deviceInfo?.areaDescription || "Cargando..."}</p>
 
         <div className="my-4 flex gap-4">
           <div>

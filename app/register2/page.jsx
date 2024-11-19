@@ -1,6 +1,7 @@
 "use client";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Importar useRouter
 import * as Yup from "yup";
 import Image from "next/image";
 
@@ -28,6 +29,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const router = useRouter(); // Instanciar el router
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -52,8 +54,14 @@ function RegisterPage() {
       }
 
       const data = await response.json();
-      console.log("Authenticated:", data);
+      console.log("User registered successfully:", data);
       setSuccess(true);
+
+      // Redirigir al login después de registrar
+
+      setTimeout(() => {
+        router.push("/login2"); // Ruta hacia la página de login
+      }, 3000); // 3000 milisegundos = 3 segundos
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,7 +75,6 @@ function RegisterPage() {
       style={{ backgroundImage: 'url("/fondo.jpg")' }}
     >
       <div className="w-full max-w-xs">
-
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -75,15 +82,15 @@ function RegisterPage() {
         >
           {({ errors, touched }) => (
             <Form className="bg-blue-100 shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div className="flex flex-col items-center gap-2 mb-4 ">
-              <Image
-                src="/Logo_Completo.PNG"
-                alt="Login Image"
-                width={165}
-                height={165}
-                priority
-              />
-            </div>
+              <div className="flex flex-col items-center gap-2 mb-4 ">
+                <Image
+                  src="/Logo_Completo.PNG"
+                  alt="Login Image"
+                  width={165}
+                  height={165}
+                  priority
+                />
+              </div>
               <div className="mb-4">
                 <label
                   className="block text-blue-800 text-sm font-bold mb-2"
